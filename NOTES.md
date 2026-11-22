@@ -218,3 +218,48 @@ logits with upstream's own `load_quantized_model` + forward (fp32, CPU):
 * fix: the loader stores mid = bf16(v1 * u2) for bf16 checkpoints. Result:
   fp32 logits match upstream to 1.2e-5 with 100% top-1 agreement; fp16
   activations 1.5e-2 max error, 100% top-1.
+
+## Training our own checkpoint (Qwen3-0.6B, 1 bpw, residual + ITQ)
+
+Upstream's QAT script, run on one 8 GB laptop GPU (RTX 4060 Laptop). To fit
+in 8 GB, three local edits to the training code (not in this repo):
+the KL distillation loss is computed in 256-token chunks under activation
+checkpointing (same value and gradients), sequences are capped at 1024
+tokens, and the optimizer is paged 8-bit AdamW. Run: lr 4e-5, cosine,
+2% warmup, batch 1 x grad-accum 4, 0.2 epochs of c4_wiki = 4139 steps,
+~17M tokens, 7.4 h. Upstream's recipe is 5 epochs at 2048 tokens, i.e.
+~25x the tokens of this run.
+
+WikiText-2 test perplexity (seqlen 2048) of the checkpoints, run with our
+kernels in MLX (`bench/eval_ppl.py`):
+
+| model | windows | perplexity |
+|---|---|---|
+| fp16 | all 146 | 20.96 |
+| MLX 4-bit (group 64) | all 146 | 23.88 |
+| LittleBit, 34-step smoke run | 40 | ~10,900 |
+| LittleBit step 1000 | 40 | 637 |
+| LittleBit step 2000 | 40 | 132 |
+| LittleBit step 3000 | 40 | 94.9 |
+| LittleBit final (step 4139) | all 146 | 94.8 |
+
+The curve flattens only because the cosine schedule ends: the training loss
+was still falling ~5% per 100 steps at step 1000. Greedy samples are fluent
+but repetitive ("The capital of France is a key factor of the European
+economy. The European economy is ..."). So: the pipeline works end to end
+(train with upstream, run on our kernels, logits verified against upstream),
+but a laptop-budget run is far from the paper's quality. Next experiment:
+an LR sweep (3x, 10x) at equal steps, to see whether a short budget is
+better spent with a higher LR.
+
+### Grouping residual layers -- accepted
+
+Trained 1-bpw checkpoints use the residual path (2 paths per layer), which
+`group_shared_inputs` used to skip, so a real checkpoint got no grouping.
+`group.py` stage 2 now loops over the PPL paths of its tile's layer and
+sums them (as lut5 stage 2 does for one residual layer); stage 1 treats the
+group's G*PPL paths layer-major. Logits of the trained model, grouped vs not:
+max |diff| 0.023 at logit scale 16.5 (fp16 summation order), 100% top-1.
+
+Decode, trained checkpoint, 18 interleaved pairs (ungrouped, grouped):
+~119 vs ~150 tok/s, **1.27x**, ratio stable in every pair (range 1.18-1.32).
