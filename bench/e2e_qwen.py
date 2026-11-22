@@ -54,6 +54,10 @@ def linear_bytes(model) -> int:
 
 def build(variant: str, args):
     from mlx_lm import load
+    if variant.startswith("ckpt:"):          # a trained upstream-format checkpoint dir
+        from littlebit_kernel.load import load_littlebit_checkpoint
+        dtype = mx.float16 if args.dtype == "float16" else mx.bfloat16
+        return load_littlebit_checkpoint(variant[5:], base_model=args.model, dtype=dtype, verbose=True)
     model, tok = load(args.model)
     if args.dtype == "float16":
         model.set_dtype(mx.float16)   # (bf16 checkpoints: converting a 4B+ model

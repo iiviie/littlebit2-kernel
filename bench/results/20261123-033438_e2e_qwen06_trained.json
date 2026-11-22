@@ -1,0 +1,85 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "6d66aee",
+  "args": {
+   "variants": "fp16,q4,lb1.0,ckpt:checkpoints/run1-final",
+   "tokens": 128,
+   "reps": 5,
+   "init": "random",
+   "itq": false,
+   "residual": true,
+   "label": "e2e_qwen06_trained",
+   "model": "Qwen/Qwen3-0.6B",
+   "dtype": "float16"
+  }
+ },
+ "records": [
+  {
+   "variant": "fp16",
+   "decode_tps": 112.20983652955456,
+   "decode_tps_all": [
+    113.37311970323654,
+    111.51023781512069,
+    108.00661246129187,
+    115.36758586175141,
+    112.20983652955456
+   ],
+   "prompt_tps": 707.2703584543087,
+   "generated_tokens": 128,
+   "linear_weight_mb": 840.0,
+   "peak_mem_mb": 1228.234764099121,
+   "sample": "**The Lighthouse Keeper\u2019s Secret**\n\nIn the quiet town of Eldershale, nestled between the hills and the sea, there lived a lighthouse keeper named Elias. He had spent his life guarding the lighthouse, "
+  },
+  {
+   "variant": "q4",
+   "decode_tps": 192.54877603573146,
+   "decode_tps_all": [
+    192.54877603573146,
+    193.32599898224635,
+    197.26016422965915,
+    191.54191541410952,
+    189.98774498108557
+   ],
+   "prompt_tps": 885.3328502911612,
+   "generated_tokens": 128,
+   "linear_weight_mb": 236.25,
+   "peak_mem_mb": 811.6097450256348,
+   "sample": "**The Lighthouse Keeper and the Message**\n\nIn the quiet town of Elden, where the sea whispered secrets in the night, there stood a lighthouse known for its steadfast presence. The keeper, Mr. Elian, h"
+  },
+  {
+   "variant": "lb1.0",
+   "decode_tps": 117.29445416326485,
+   "decode_tps_all": [
+    118.79568195124796,
+    117.03565702684425,
+    117.29445416326485,
+    104.77128428347933,
+    118.05201311904008
+   ],
+   "prompt_tps": 498.6970160875145,
+   "generated_tokens": 55,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.5137481689453,
+   "sample": "nnenops\u00f4teounty recyclecycluallyopsudu {-oltmlink!ibelencyhowerricesiliary!hower Ballardelen\u00fchr\u00fchrCORE\u903c\u00fchrelen!nbspansenbineoutops!ibel!lte legersive1howeropsrade.assertThatsetSize fois\u00fchr!slavelag n\u1eef"
+  },
+  {
+   "variant": "ckpt:checkpoints/run1-final",
+   "decode_tps": 102.20342870466713,
+   "decode_tps_all": [
+    114.89853638949627,
+    113.33089309876563,
+    91.61945894540806,
+    102.20342870466713,
+    98.26804174573957
+   ],
+   "prompt_tps": 459.8351224220333,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.9763946533203,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  }
+ ]
+}

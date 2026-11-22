@@ -1,0 +1,85 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "6d66aee",
+  "args": {
+   "variants": "ckpt:checkpoints/run1-final,lb1.0,ckpt:checkpoints/run1-final,lb1.0",
+   "tokens": 128,
+   "reps": 5,
+   "init": "random",
+   "itq": false,
+   "residual": true,
+   "label": "e2e_qwen06_trained_recheck",
+   "model": "Qwen/Qwen3-0.6B",
+   "dtype": "float16"
+  }
+ },
+ "records": [
+  {
+   "variant": "ckpt:checkpoints/run1-final",
+   "decode_tps": 120.90538300784243,
+   "decode_tps_all": [
+    116.88951516559773,
+    120.90538300784243,
+    118.51538653868406,
+    121.12541125891775,
+    121.00619012279597
+   ],
+   "prompt_tps": 498.3071134993299,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.9915313720703,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  },
+  {
+   "variant": "lb1.0",
+   "decode_tps": 125.21985316112486,
+   "decode_tps_all": [
+    126.13320234995562,
+    126.14635290063016,
+    123.41838054874138,
+    124.12298746257541,
+    125.21985316112486
+   ],
+   "prompt_tps": 498.633776221954,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.5137481689453,
+   "sample": "ailabilityressivepostowndagAAPencialIVO Mart\u6000\u62b1acing\u67f0 congratulations\u5f40\"),\r\n\u0648\u0644\u0629\u0142ad_crulled|iulent\u4e3a\u4e2d\u5fc3\u54ea\u91ccompuable\ud488.dataTablesanged\u90e2\u4e4e rel\u7ea7\u4ee5\u4e0a\u5acc\u7591 }]);\niated\fiphery\u5e2e\u4ed6\u5341\u4e8c\u6761icer\ufffd\ufffdoire\uff01\u300dicators\u6d88\u606f\u79f0 ucwordsainermouthg"
+  },
+  {
+   "variant": "ckpt:checkpoints/run1-final",
+   "decode_tps": 123.79777224199027,
+   "decode_tps_all": [
+    123.54819315063918,
+    124.68745432998887,
+    123.79777224199027,
+    121.01329730368593,
+    124.65966124178871
+   ],
+   "prompt_tps": 500.2580375306314,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.9900665283203,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  },
+  {
+   "variant": "lb1.0",
+   "decode_tps": 124.14392410076789,
+   "decode_tps_all": [
+    124.99593617168972,
+    121.99220904768796,
+    125.02718681751627,
+    123.52420336551017,
+    124.14392410076789
+   ],
+   "prompt_tps": 498.3881183399877,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.5137481689453,
+   "sample": "udge->{asilisable satiretiesgeberple\n                        \n profundndonlaws\u043e\u0440CursorPosition#__oeff\u0435\u0447\u0430GBT\u66beCOME germUSTispensinson');</\u597d\u5417\ufffd\u8bd5ObjectContextothiese\u0438\u0442\u0435\u043b\u0435\u0439heidriere\u00e2odesklassen\u0645\u0627\u0646vil\u0447\u0443house"
+  }
+ ]
+}
