@@ -39,6 +39,11 @@ import os
 import platform
 import time
 
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from bench import quiet_trial  # noqa: E402
+
 import mlx.core as mx
 import numpy as np
 
@@ -82,13 +87,14 @@ def time_rounds(launch, launches: int, trials: int, warmup: int = 2) -> list:
     """Seconds per launch for each timed round (`launches` launches per eval)."""
     for _ in range(warmup):
         mx.eval([launch() for _ in range(launches)])
-    per_launch = []
-    for _ in range(trials):
+    def one_round():
         outs = [launch() for _ in range(launches)]   # build the lazy graph first
         t0 = time.perf_counter()
         mx.eval(outs)                                 # ... then time only the GPU run
-        per_launch.append((time.perf_counter() - t0) / launches)
-    return per_launch
+        return (time.perf_counter() - t0) / launches
+
+    # quiet_trial: redo any round that overlapped another GPU job (bench.py)
+    return [quiet_trial(one_round) for _ in range(trials)]
 
 
 def summarize(nbytes: int, secs: list) -> dict:

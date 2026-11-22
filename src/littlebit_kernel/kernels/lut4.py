@@ -104,13 +104,13 @@ _kernel = mx.fast.metal_kernel(
     input_names=["x", "bitsT", "pre", "post", "bias"],
     output_names=["out"], source=_SRC, atomic_outputs=True)
 
-CFG = dict(TG=128, KC=1024, MIN_TGS=64)
+# KC1/KC2: inner-dim chunk for stage 1 / stage 2 (A/B-tuned, see NOTES.md)
+CFG = dict(TG=128, KC1=512, KC2=512, MIN_TGS=64)
 
 
-def _rowdot(x, bitsT, pre, post, bias, K, N, NP, M, prescale, x_per_path, out_per_path, cfg):
+def _rowdot(x, bitsT, pre, post, bias, K, N, NP, M, prescale, x_per_path, out_per_path, cfg, kc):
     tg = cfg["TG"]
     n_tiles = (N + tg - 1) // tg
-    kc = cfg["KC"]
     while kc > 128 and n_tiles * NP * ((K + kc - 1) // kc) < cfg["MIN_TGS"]:
         kc //= 2
     nch = (K + kc - 1) // kc
@@ -131,8 +131,8 @@ def forward_arrays(x, VT, UT, v2, mid, u1, bias, in_features, rank, out_features
     x2, restore = as_2d(x)
     M, NP = x2.shape[0], VT.shape[0]
     K, R, OUT = in_features, rank, out_features
-    t = _rowdot(x2, VT, v2, mid, None, K, R, NP, M, True, False, True, c)
-    y = _rowdot(t, UT, u1, u1, bias, R, OUT, NP, M, False, True, False, c)
+    t = _rowdot(x2, VT, v2, mid, None, K, R, NP, M, True, False, True, c, c["KC1"])
+    y = _rowdot(t, UT, u1, u1, bias, R, OUT, NP, M, False, True, False, c, c["KC2"])
     return restore(y.reshape(M, OUT).astype(x.dtype))
 
 

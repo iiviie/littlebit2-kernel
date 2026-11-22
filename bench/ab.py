@@ -29,7 +29,8 @@ import mlx.core as mx
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from bench import _glue, quiet_trial  # noqa: E402
+from bench import (BASELINES, _glue, build_dense, build_kernel_copies, build_quant,  # noqa: E402
+                   build_unpack_matmul, load_peak, n_copies_for, quiet_trial)
 from shapes import get_shapes  # noqa: E402
 
 from littlebit_kernel.format import LittleBitLayer  # noqa: E402
@@ -64,32 +65,42 @@ def run(args):
     cands = [(i, i, {}) for i in args.impls.split(",") if i] + parse_cfgs(args.cfg)
     shapes = get_shapes(args.models.split(","), quick=args.quick)
     records = []
+    peak = (load_peak() or {}).get("peak_read_gbps") if callable(load_peak) else None
     for (model, proj, in_f, out_f) in shapes:
         for bpw in [float(b) for b in args.bpw.split(",")]:
             for res in {"off": [False], "on": [True], "both": [False, True]}[args.residual]:
                 L = LittleBitLayer.random(in_f, out_f, eff_bit=bpw, residual=res)
-                D0 = DeviceLayer.from_layer(L)
-                C = int(min(args.max_copies, max(2, args.rotate_mb * 2**20 // D0.nbytes())))
-                Ds = [D0] + [DeviceLayer.from_layer(L) for _ in range(C - 1)]
+                ncop = lambda nb: max(2, n_copies_for(nb, args.rotate_mb, args.max_copies))
+                Ds, kbytes = build_kernel_copies(L, ncop)
                 xs = [mx.random.normal((1, in_f)).astype(mx.float16) for _ in range(args.n)]
                 mx.eval(xs)
-                fns = []
+                fns = []   # (label, fn(x, copy), n_copies, weight_bytes)
                 for label, impl, cfg in cands:
-                    f = KERNELS[impl]
-                    fn = (lambda x, c, f=f, cfg=cfg: f(x, Ds[c], cfg)) if cfg else (lambda x, c, f=f: f(x, Ds[c]))
+                    if impl in BASELINES:
+                        if impl == "fp16":
+                            fn, wb, C = build_dense(in_f, out_f, mx.float16, ncop)
+                        elif impl in ("q4", "q2"):
+                            fn, wb, C = build_quant(in_f, out_f, mx.float16, int(impl[1]), ncop)
+                        else:
+                            fn, wb, C = build_unpack_matmul(L, mx.float16, ncop)
+                    else:
+                        f = KERNELS[impl]
+                        fn = (lambda x, c, f=f, cfg=cfg: f(x, Ds[c], cfg)) if cfg else \
+                             (lambda x, c, f=f: f(x, Ds[c]))
+                        wb, C = kbytes, len(Ds)
                     for _ in range(2):           # warm up + build per-copy caches
                         chain_time(fn, xs, C, args.n)
-                    fns.append((label, fn))
-                times = {lab: [] for lab, _ in fns}
+                    fns.append((label, fn, C, wb))
+                times = {lab: [] for lab, *_ in fns}
                 for _ in range(args.rounds):
                     order = list(fns)
                     random.shuffle(order)
-                    for lab, fn in order:
+                    for lab, fn, C, _ in order:
                         times[lab].append(quiet_trial(chain_time, fn, xs, C, args.n))
                 base = np.array(times[fns[0][0]])
                 head = f"{model} {proj} {in_f}x{out_f} bpw={bpw} res={'on' if res else 'off'} r={L.main.rank}"
                 print(head, flush=True)
-                for lab, _ in fns:
+                for lab, _, C, wb in fns:
                     t = np.array(times[lab]) * 1e6
                     ratio = base / np.array(times[lab])   # >1: faster than first candidate
                     rec = dict(model=model, proj=proj, **{"in": in_f, "out": out_f}, bpw=bpw, residual=res,
@@ -97,11 +108,15 @@ def run(args):
                                p10_us=float(np.percentile(t, 10)), p90_us=float(np.percentile(t, 90)),
                                speedup_vs_first=float(np.median(ratio)),
                                speedup_p10=float(np.percentile(ratio, 10)),
-                               speedup_p90=float(np.percentile(ratio, 90)))
+                               speedup_p90=float(np.percentile(ratio, 90)),
+                               weight_bytes=int(wb), n_copies=int(C),
+                               gbps=(wb + 4 * (in_f + out_f)) / (np.median(t) * 1e-6) / 1e9)
+                    if peak:
+                        rec["pct_peak"] = 100 * rec["gbps"] / peak
                     records.append(rec)
-                    print(f"   {lab:32s} {rec['chain_us']:8.1f} us [{rec['p10_us']:7.1f}-{rec['p90_us']:7.1f}]"
-                          f"  x{rec['speedup_vs_first']:.2f} [{rec['speedup_p10']:.2f}-{rec['speedup_p90']:.2f}]",
-                          flush=True)
+                    print(f"   {lab:24s} {rec['chain_us']:8.1f} us [{rec['p10_us']:7.1f}-{rec['p90_us']:7.1f}]"
+                          f"  x{rec['speedup_vs_first']:.2f} [{rec['speedup_p10']:.2f}-{rec['speedup_p90']:.2f}]"
+                          f"  {wb / 2**20:7.2f} MB {rec['gbps']:6.1f} GB/s", flush=True)
     return records
 
 
