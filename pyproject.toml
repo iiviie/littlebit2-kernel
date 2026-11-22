@@ -23,3 +23,10 @@ dev = [
     "safetensors>=0.8.0",
     "torch>=2.15.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: large shapes (e.g. 4096x14336); deselect with -m \"not slow\"",
+    "upstream: needs the upstream LittleBit clone at third_party/LittleBit (skipped if absent)",
+]
