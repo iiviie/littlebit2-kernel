@@ -12,7 +12,31 @@ and Llama-3-8B.
 | `noise.py` | run-to-run noise estimate → `results/noise.json` |
 | `compare.py` | new run vs earlier runs / vs baselines; `--markdown` table |
 
-## Running
+## The tool to trust: interleaved A/B (`ab.py`)
+
+On this machine the *same* kernel can measure 200 µs in one run and 280 µs
+in the next (thermals, charging, GPU clock ramping, background apps). A
+sequential "run A, later run B" comparison is therefore unreliable.
+`ab.py` times every candidate once per round, in shuffled order, back to
+back, and reports the **per-round ratio** to the first candidate with its
+10th-90th percentile band. Baselines (`fp16`, `q4`, `q2`,
+`unpack_matmul`) can be candidates too, so speedups vs baselines are
+paired as well. Timing is always the dependent-chain time over rotated
+weight copies (see below). `ab_table.py` turns an `ab.py` result into the
+README table.
+
+```sh
+.venv/bin/python bench/ab.py --impls lut5,lut4 --quick                       # kernel vs kernel
+.venv/bin/python bench/ab.py --impls lut4 --cfg lut4:KC1=256 --quick         # config sweep
+.venv/bin/python bench/ab.py --impls auto,fp16,q4,q2,unpack_matmul --label final
+.venv/bin/python bench/ab_table.py bench/results/<time>_final.json
+```
+
+Every timed trial checks for other GPU jobs (`BENCH_BUSY_PATTERN`, default
+`demucs`; a regex for `pgrep -f`) before and after, and is redone if one
+overlapped.
+
+## Running (bench.py: single-run sweep)
 
 Run everything one at a time on a quiet machine: nothing else on the GPU.
 Two timing processes at once disturb each other.
