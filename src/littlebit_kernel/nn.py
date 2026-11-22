@@ -8,6 +8,7 @@ dense weight is never materialised.
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Callable, Optional
 
 import mlx.core as mx
@@ -38,10 +39,15 @@ class LittleBitLinear(nn.Module):
         else:
             self.bias = None
         mx.eval(self.parameters())
+        # mx.compile traces the kernel calls once per input shape; later calls
+        # replay the traced graph from C++.  That halves the per-call CPU
+        # cost of building the graph (~20 -> ~8 us), which matters because
+        # mlx-lm decode is partly CPU-bound for tiny layers (NOTES.md).
+        self._fwd = mx.compile(partial(auto.forward_arrays, in_features=self.in_features,
+                                       rank=self.rank, out_features=self.out_features))
 
     def __call__(self, x):
-        return auto.forward_arrays(x, self.VT, self.UT, self.v2, self.mid, self.u1, self.bias,
-                                  self.in_features, self.rank, self.out_features)
+        return self._fwd(x, self.VT, self.UT, self.v2, self.mid, self.u1, self.bias)
 
     def nbytes(self) -> int:
         return sum(v.nbytes for _, v in nn.utils.tree_flatten(self.parameters()))
