@@ -2,14 +2,17 @@
 
 Interleaved A/B on M1 Pro (bench/results/*_ab_lut5.json, NOTES.md):
 
-* small layers (< ~1 MB of packed weights: every Qwen3-0.6B projection,
+* small layers (< ~0.5 MB of packed weights: every Qwen3-0.6B projection,
   4B at 0.1 bpw): time is dominated by per-dispatch latency, and `lut5`
   (2 dispatches, no atomics) is 1.2-1.5x faster than `lut4` (5 dispatches).
 * large layers (r >~ 1000): `lut4` (split-K with float atomics) is 1.2-1.6x
   faster than `lut5`, whose stage 2 has to re-sum many stage-1 partials in
   every threadgroup.
 
-Crossover measured around 0.7-1.6 MB; we switch at 1 MB.
+The full-table run first used a 1 MB switch and showed layers of 0.6-0.9 MB
+running slower on lut5 than neighbouring bigger layers on lut4 (e.g. 4B
+q_proj 0.69 MB: 125 us vs 87 us at 1.25 MB); the A/B on Llama down @0.1 bpw
+(0.70 MB) also favoured lut4 (x1.09).  So we switch at 512 KB.
 """
 
 from __future__ import annotations
@@ -18,7 +21,7 @@ from . import lut4, lut5
 from .common import DeviceLayer
 from .lut import _prepare
 
-SWITCH_BYTES = 1 << 20
+SWITCH_BYTES = 512 * 1024
 
 
 def weight_bytes(in_features, rank, out_features, n_paths) -> int:
