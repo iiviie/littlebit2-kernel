@@ -154,15 +154,25 @@ def _rowdot(x, bitsT, pre, post, bias, K, N, NP, M, prescale, x_per_path, out_pe
     return out
 
 
-def forward(x: mx.array, layer: DeviceLayer) -> mx.array:
-    c = _prepare(layer)
+def forward_arrays(x, VT, UT, v2, mid, u1, bias, in_features, rank, out_features):
+    """Forward from the repacked arrays (used by `littlebit_kernel.nn`).
+
+    VT: (NP, ceil(in/32), r) uint32    UT: (NP, ceil(r/32), out) uint32
+    v2: (NP, in)  mid: (NP, r)  u1: (NP, out)  bias: (out,) or None
+    """
     x2, restore = as_2d(x)
-    M, NP = x2.shape[0], len(layer.paths)
-    K, R, OUT = layer.in_features, layer.rank, layer.out_features
+    M, NP = x2.shape[0], VT.shape[0]
+    K, R, OUT = in_features, rank, out_features
     # stage 1: t[m, p, :] = mid_p * signV_p @ (x * v2_p)
-    t = _rowdot(x2, c["VT"], c["v2"], c["mid"], None, K, R, NP, M,
+    t = _rowdot(x2, VT, v2, mid, None, K, R, NP, M,
                 prescale=True, x_per_path=False, out_per_path=True)
     # stage 2: y[m, :] = sum_p u1_p * signU_p @ t[m, p] (+ bias)
-    y = _rowdot(t, c["UT"], c["u1"], c["u1"], layer.bias, R, OUT, NP, M,
+    y = _rowdot(t, UT, u1, u1, bias, R, OUT, NP, M,
                 prescale=False, x_per_path=True, out_per_path=False)
     return restore(y.reshape(M, OUT).astype(x.dtype))
+
+
+def forward(x: mx.array, layer: DeviceLayer) -> mx.array:
+    c = _prepare(layer)
+    return forward_arrays(x, c["VT"], c["UT"], c["v2"], c["mid"], c["u1"], layer.bias,
+                          layer.in_features, layer.rank, layer.out_features)
