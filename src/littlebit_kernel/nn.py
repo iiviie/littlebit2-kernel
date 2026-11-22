@@ -109,14 +109,16 @@ class LittleBitGroup:
         def pad_last(a, n):        # zero-pad the last axis to n
             return mx.pad(a, [(0, 0)] * (a.ndim - 1) + [(0, n - a.shape[-1])])
 
-        def pad_rows(a, n):        # zero-pad axis 0 to n
-            return mx.pad(a, [(0, n - a.shape[0])] + [(0, 0)] * (a.ndim - 1))
+        def pad_mid(a, n):         # zero-pad axis 1 of (P, W, out) to n
+            return mx.pad(a, [(0, 0), (0, n - a.shape[1]), (0, 0)])
 
-        self.VT = mx.contiguous(mx.concatenate([pad_last(l.VT, R) for l in layers], 0))   # (G, W1, R)
-        self.v2 = mx.concatenate([l.v2 for l in layers], 0)                               # (G, in)
-        self.mid = mx.concatenate([pad_last(l.mid, R) for l in layers], 0)                # (G, R)
-        self.UT = mx.contiguous(mx.concatenate([pad_rows(l.UT[0], W2) for l in layers], 1))  # (W2, OUT)
-        self.u1 = mx.concatenate([l.u1[0] for l in layers], 0)
+        # P paths per layer (1, or 2 with a residual path); stage 1 sees the
+        # G*P paths layer-major, stage 2 sums each layer's P paths.
+        self.VT = mx.contiguous(mx.concatenate([pad_last(l.VT, R) for l in layers], 0))   # (G*P, W1, R)
+        self.v2 = mx.concatenate([l.v2 for l in layers], 0)                               # (G*P, in)
+        self.mid = mx.concatenate([pad_last(l.mid, R) for l in layers], 0)                # (G*P, R)
+        self.UT = mx.contiguous(mx.concatenate([pad_mid(l.UT, W2) for l in layers], 2))   # (P, W2, OUT)
+        self.u1 = mx.concatenate([l.u1 for l in layers], 1)                               # (P, OUT)
         if any(l.bias is not None for l in layers):
             self.bias = mx.concatenate([l.bias if l.bias is not None else mx.zeros((l.out_features,), l.u1.dtype)
                                         for l in layers])
@@ -144,10 +146,11 @@ class LittleBitGroup:
     def eligible(layers) -> bool:
         from .kernels import auto, group as gk
         return (all(isinstance(l, LittleBitLinear) for l in layers)
-                and all(l.VT.shape[0] == 1 for l in layers)                  # no residual path
+                and len({l.VT.shape[0] for l in layers}) == 1                # same paths per layer
                 and len({l.in_features for l in layers}) == 1
                 and all(l.out_features % gk.TG == 0 for l in layers)
-                and all(auto.pick(l.in_features, l.rank, l.out_features, 1) is auto.lut5 for l in layers))
+                and all(auto.pick(l.in_features, l.rank, l.out_features, l.VT.shape[0]) is auto.lut5
+                        for l in layers))
 
 
 class GroupedLittleBitLinear(nn.Module):

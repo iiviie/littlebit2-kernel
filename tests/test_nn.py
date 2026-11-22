@@ -43,13 +43,15 @@ def test_littlebitify_replaces_targets_only():
     assert y.shape == (1, 96)
 
 
+@pytest.mark.parametrize("residual", [False, True])
 @pytest.mark.parametrize("bpw", [0.1, 0.55, 1.0])
 @pytest.mark.parametrize("names,outs", [(("q_proj", "k_proj", "v_proj"), (2048, 1024, 1024)),
                                         (("gate_proj", "up_proj"), (3072, 3072))])
-def test_grouped_layers_match_reference(bpw, names, outs):
+def test_grouped_layers_match_reference(bpw, names, outs, residual):
     from littlebit_kernel.nn import GroupedLittleBitLinear, group_shared_inputs
 
-    Ls = [round_layer_scales(LittleBitLayer.random(1024, o, eff_bit=bpw, seed=i, bias=(i == 1)))
+    Ls = [round_layer_scales(LittleBitLayer.random(1024, o, eff_bit=bpw, seed=i, bias=(i == 1),
+                                                   residual=residual))
           for i, o in enumerate(outs)]
     m = nn.Module()
     for n, L in zip(names, Ls):

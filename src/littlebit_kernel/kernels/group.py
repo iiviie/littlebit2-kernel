@@ -19,8 +19,11 @@ How it maps onto the existing kernels:
   from that layer's t and writes its slice of the concatenated output.
   The caller splits the output back into q / k / v (cheap slices).
 
-Only non-residual layers are grouped (residual layers would need two paths
-per layer); `nn.group_shared_inputs` skips anything else.
+Residual layers (main + residual path, both reading x) group too: each
+layer then has PPL = 2 paths.  Stage 1 sees NL * PPL paths (layer-major);
+stage 2 loops over the PPL paths of its tile's layer and sums them, exactly
+like lut5's stage 2 does for one residual layer.  UT is (PPL, W2, OUT) and
+u1 is (PPL, OUT) -- path p of every layer, concatenated along the outputs.
 """
 
 from __future__ import annotations
@@ -39,22 +42,26 @@ _STAGE2G = """
     const uint w0    = kbase / 32;
     threadgroup float T[(KC / 4) * 16];
 
-    // which layer (path) owns this row tile
+    // which layer owns this row tile
     const uint tile_row0 = threadgroup_position_in_grid.x * TG;
-    uint path = 0;
-    while (path + 1 < NP && tile_row0 >= seg[path + 1]) ++path;
+    uint layer = 0;
+    while (layer + 1 < NP / PPL && tile_row0 >= seg[layer + 1]) ++layer;
 
-    const device uint* B = UT;
+    float y = 0.0f;
+    for (uint p = 0; p < PPL; ++p) {
+        const device uint* B = UT + p * W * N;
 """ + _PREFETCH + """
-    const device float* tp = tpart + (m * NP + path) * NCH1 * K;
-    #define LOAD(k) partial_sum(tp, k)
+        const device float* tp = tpart + (m * NP + layer * PPL + p) * NCH1 * K;
+        #define LOAD(k) partial_sum(tp, k)
 """ + _BUILD + """
-    #undef LOAD
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    if (row >= N) return;
-    float acc;
+        #undef LOAD
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        float acc;
 """ + _LOOKUP + """
-    float y = acc * float(u1[row]);
+        if (row < N) y += acc * float(u1[p * N + row]);
+        if (PPL > 1) threadgroup_barrier(mem_flags::mem_threadgroup);   // T is rebuilt next path
+    }
+    if (row >= N) return;
     if (FINAL) {
         if (HAS_BIAS) y += float(bias[row]);
         out[m * N + row] = static_cast<TO>(y);
@@ -71,12 +78,13 @@ CFG = dict(KC1=512, KC2=512, MIN_TGS=64)
 
 
 def forward_group(x, VT, v2, mid, UT, u1, bias, seg, in_features, rank, out_total, cfg=None):
-    """VT (NP, ceil(in/32), r) | v2 (NP, in) | mid (NP, r) | UT (ceil(r/32), OUT) |
-    u1 (OUT,) | bias (OUT,) or None | seg: uint32 (NP+1,) row offsets.
+    """NP = layers * PPL paths, layer-major.
+    VT (NP, ceil(in/32), r) | v2 (NP, in) | mid (NP, r) | UT (PPL, ceil(r/32), OUT) |
+    u1 (PPL, OUT) | bias (OUT,) or None | seg: uint32 (layers+1,) row offsets.
     Returns (..., OUT) -- the layers' outputs side by side."""
     c = {**CFG, **(cfg or {})}
     x2, restore = as_2d(x)
-    M, NP = x2.shape[0], VT.shape[0]
+    M, NP, PPL = x2.shape[0], VT.shape[0], UT.shape[0]
     K, R, OUT = in_features, rank, out_total
 
     tiles1 = _ceil(R, TG)
@@ -96,7 +104,7 @@ def forward_group(x, VT, v2, mid, UT, u1, bias, seg, in_features, rank, out_tota
     (y,) = _k2g(
         inputs=[tpart, UT, u1, b, seg],
         template=[("TO", x2.dtype if final else mx.float32), ("K", R), ("N", OUT), ("W", _ceil(R, 32)),
-                  ("KC", kc2), ("NCH", nch2), ("NCH1", nch1), ("NP", NP), ("TG", TG),
+                  ("KC", kc2), ("NCH", nch2), ("NCH1", nch1), ("NP", NP), ("PPL", PPL), ("TG", TG),
                   ("FINAL", final), ("HAS_BIAS", bias is not None)],
         grid=(tiles2 * TG, nch2, M), threadgroup=(TG, 1, 1),
         output_shapes=[(M, OUT) if final else (M, nch2, OUT)],
