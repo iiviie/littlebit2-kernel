@@ -129,3 +129,58 @@ atomics (no zero-fill dispatches, no cast). 2 dispatches for most layers,
 3 (+ a tiny reduce) when stage 2 must split r for occupancy. The gate caught
 a bug in the first version (a 160-wide chunk halved to 80, not a multiple
 of 32 -> wrong results for r=136); fixed by using power-of-two chunks.
+
+### lut5 vs lut4 -> `auto` (accepted)
+Interleaved A/B (`results/*_ab_lut5.json`, quick shapes, residual on/off):
+lut5 beats lut4 by 1.1-1.5x on small layers (0.6B, 4B @0.1 bpw), and lut4
+beats lut5 by 1.2-1.6x on large ones (Llama down/gate @0.55-1 bpw). lut5's
+stage 2 re-sums up to ~28 stage-1 partials per table entry in *every*
+threadgroup, which gets expensive when K and r are large. `auto` picks by
+packed-weight size. A first full-table run with the switch at 1 MB showed
+0.6-0.9 MB layers on lut5 running slower than bigger neighbours on lut4
+(4B q_proj 0.69 MB: 125 µs vs 87 µs at 1.25 MB), so the switch moved to
+512 KB and the table was re-run (`results/20261122-184955_final.json`).
+
+## Final per-layer standing (auto vs baselines, paired, chained, cold cache)
+
+* Llama-3-8B / Qwen3-4B-sized layers: 1.7-8x vs fp16, 1.3-2.9x vs q4,
+  1.2-2.7x vs q2, 1.5-4.3x vs upstream's unpack-then-matmul.
+* Qwen3-0.6B-sized layers: 0.9-1.9x vs fp16, ~0.9-1.6x vs q4/q2. Parity
+  above 0.3 bpw: every implementation is dominated by fixed per-call cost.
+* Achieved bandwidth: at most ~27% of the 158.7 GB/s peak (fp16 reaches ~94%,
+  q4 ~74%). The win comes from reading far fewer bytes. The kernel is
+  still bound by instruction latency, not by DRAM.
+
+## End to end (Qwen3-0.6B in mlx-lm)
+
+First run (`results/20261122-190230_e2e_qwen06.json`): fp16 117 tok/s,
+q4 197, q2 204, LittleBit 86-101. Slower than fp16! Investigation:
+
+* A pure chain of 196 distinct 1024x1024 layers (`y = f(y)`, no glue op)
+  costs per layer: fp16 32 µs, q4 28 µs, LittleBit 60 µs. Of LittleBit's
+  60 µs, ~20-26 µs is *CPU* graph-building: each layer makes 2-3
+  `mx.fast.metal_kernel` calls, and every call builds template lists and
+  looks up the specialised kernel. A q4 linear costs 2.2 µs to build.
+* Fix: `mx.compile` the layer's forward (traced once per shape, replayed
+  from C++). Build cost 19.5 -> 8.3 µs per call, with identical output.
+  End to end: LittleBit 0.1 / 0.55 / 1.0 bpw = 138 / 111 / 125 tok/s
+  (q4 179 in the same run). Now faster than fp16, still behind q4.
+* What's left is structural: 2 GPU dispatches per layer (vs 1) at ~6-7 µs
+  dependent-dispatch latency, x196 layers.
+
+## Not done / next ideas (ranked)
+
+1. **Group layers that share an input** (q/k/v, gate/up) into one launch:
+   per block, 14 dispatches -> 8. The kernels already handle several
+   "paths" sharing x (that is how the residual path works). Stage 2 would
+   need per-path output segments instead of a sum. This is the main lever
+   for small models.
+2. **Lookup loop throughput** (big layers, ~27% of peak): try tables in
+   registers via `simd_shuffle` (no threadgroup memory -> more occupancy),
+   half-precision tables for fp16 activations (would need a looser gate),
+   and fewer, longer-lived threadgroups.
+3. **One dispatch for tiny layers.** The redundant-stage-1 approach
+   (`fused`) failed; a grid-wide barrier via atomics is possible but relies
+   on co-residency of threadgroups, so it is risky.
+4. **Bigger-model end to end.** Per-layer data says the 4B/8B models are
+   where LittleBit pays off; see README for what was measured.
