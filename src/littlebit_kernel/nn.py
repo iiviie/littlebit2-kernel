@@ -15,7 +15,7 @@ import mlx.nn as nn
 import numpy as np
 
 from .format import LittleBitLayer
-from .kernels import lut
+from .kernels import auto
 
 
 class LittleBitLinear(nn.Module):
@@ -40,7 +40,7 @@ class LittleBitLinear(nn.Module):
         mx.eval(self.parameters())
 
     def __call__(self, x):
-        return lut.forward_arrays(x, self.VT, self.UT, self.v2, self.mid, self.u1, self.bias,
+        return auto.forward_arrays(x, self.VT, self.UT, self.v2, self.mid, self.u1, self.bias,
                                   self.in_features, self.rank, self.out_features)
 
     def nbytes(self) -> int:
