@@ -36,6 +36,9 @@ from littlebit_kernel.format import LittleBitLayer, split_dim_for  # noqa: E402
 from littlebit_kernel.init import littlebit_from_dense  # noqa: E402
 from littlebit_kernel.nn import DEFAULT_TARGETS, littlebitify  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from bench import quiet_trial  # noqa: E402  (redo a rep if another GPU job overlapped)
+
 MODEL = "Qwen/Qwen3-0.6B"
 PROMPT = "Write a short story about a lighthouse keeper who finds a message in a bottle."
 
@@ -92,11 +95,14 @@ def run_variant(variant: str, args):
     for _ in stream_generate(model, tok, prompt, max_tokens=8, sampler=sampler):
         pass
     mx.reset_peak_memory()
-    for rep in range(args.reps):
-        last = None
-        text = ""
+    def one_rep():
+        last, text = None, ""
         for last in stream_generate(model, tok, prompt, max_tokens=args.tokens, sampler=sampler):
             text += last.text
+        return last, text
+
+    for rep in range(args.reps):
+        last, text = quiet_trial(one_rep)
         gen.append(last.generation_tps)
         pre.append(last.prompt_tps)
     rec = dict(variant=variant, decode_tps=statistics.median(gen), decode_tps_all=gen,
