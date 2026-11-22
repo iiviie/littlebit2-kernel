@@ -138,7 +138,7 @@ BUSY_PATTERN = os.environ.get("BENCH_BUSY_PATTERN", "demucs")
 def gpu_busy() -> bool:
     if not BUSY_PATTERN:
         return False
-    r = subprocess.run(["pgrep", "-f", "-E", BUSY_PATTERN], capture_output=True, text=True)
+    r = subprocess.run(["pgrep", "-f", BUSY_PATTERN], capture_output=True, text=True)
     return bool(r.stdout.strip())
 
 

@@ -11,7 +11,7 @@
 # Edit BUSY_PATTERN for whatever else uses your GPU.
 BUSY_PATTERN=${BUSY_PATTERN:-"demucs|pytest|bench/(bench|noise|peak_bw)\.py"}
 RESULTS=bench/results
-busy() { pgrep -f -E "$BUSY_PATTERN" | grep -v -E "^($$|$1)$" >/dev/null; }
+busy() { pgrep -f "$BUSY_PATTERN" | grep -v -E "^($$|$1)$" >/dev/null; }
 
 for attempt in 1 2 3 4 5 6; do
   while busy; do echo "[quiet] GPU busy, waiting..."; sleep 20; done
@@ -20,7 +20,7 @@ for attempt in 1 2 3 4 5 6; do
   dirty=0
   while kill -0 $pid 2>/dev/null; do
     # ignore our own benchmark process (and its children)
-    if pgrep -f -E "$BUSY_PATTERN" | grep -v -E "^($$|$pid)$" | while read p; do
+    if pgrep -f "$BUSY_PATTERN" | grep -v -E "^($$|$pid)$" | while read p; do
          [ "$(ps -o ppid= -p $p | tr -d ' ')" = "$pid" ] || echo $p; done | grep -q .; then
       dirty=1
     fi
