@@ -229,10 +229,23 @@ median of 5 runs, `bench/e2e_qwen.py`. LittleBit layers use SVD init
 without QAT (the text is gibberish, but the shapes and the speed are those of
 a real checkpoint).
 
-E2E_TABLE
+| variant | linear weights | decode tok/s | vs fp16 | vs q4 | prompt tok/s | peak MLX memory |
+|---|---|---|---|---|---|---|
+| fp16 | 840 MB | 118.6 | 1.00x | 0.61x | 631 | 1216 MB |
+| MLX 4-bit (q4) | 236 MB | 195.5 | 1.65x | 1.00x | 684 | 810 MB |
+| MLX 2-bit (q2) | 131 MB | 209.8 | 1.77x | 1.07x | 658 | 707 MB |
+| LittleBit 0.1 bpw | 5.3 MB | 143.3 | 1.21x | 0.73x | 896 | 355 MB |
+| LittleBit 0.3 bpw | 16.1 MB | 125.7 | 1.06x | 0.64x | 658 | 431 MB |
+| LittleBit 0.55 bpw | 28.8 MB | 126.7 | 1.07x | 0.65x | 589 | 495 MB |
+| LittleBit 1.0 bpw | 53.0 MB | 127.4 | 1.07x | 0.65x | 483 | 562 MB |
+
+(`bench/results/20261122-191730_e2e_qwen06_final.json`, all variants in one
+run; the q2 model itself produces garbage text too, and quality isn't the
+point of this table. "peak MLX memory" includes the ~300 MB fp16
+embedding/LM head and the KV cache.)
 
 **At 0.6B, LittleBit end to end is faster than fp16 but slower than 4-bit.**
-It decodes at ~0.6-0.75x the speed of q4 while using **2-3.5x less memory**
+It decodes at ~0.65-0.75x the speed of q4 while using **2.2-3.4x less memory**
 than fp16 (355 MB peak at 0.1 bpw, of which the fp16 embedding/LM head is
 ~300 MB). The per-layer kernels are at parity with q4 at this size. The gap
 comes from fixed per-call costs that a single quantized matmul doesn't pay:
