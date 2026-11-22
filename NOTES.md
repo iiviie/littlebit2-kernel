@@ -35,6 +35,10 @@ Hardware: Apple M1 Pro (16-core GPU), 16 GB, macOS 15.8, MLX 0.32.4.
   order) and reports the per-round *ratio*. A change is accepted when the
   10th-90th percentile band of that ratio lies above 1 (it wins in at
   least 90% of rounds), not when one median beats another.
+  `bench/noise.py` (6 independent repetitions, `results/noise.json`) puts
+  the run-to-run noise band at **12% (chained) / 18% (batched)** for the
+  kernel, vs 1-4% for fp16 matmuls. That is why sequential comparisons
+  (`compare.py`) were only used as a sanity check.
 * **Dispatch latency.** An *empty* kernel in a dependency chain costs
   ~14 µs per link here (the empty kernel plus the 1-element glue op), i.e.
   ~6-7 µs per dependent dispatch. For small sub-1-bit layers that is most

@@ -8,7 +8,7 @@ configs:
     mid   : qwen3-4b   gate_proj (2560 -> 9728)  @ 0.55 bpw, residual on
     large : llama3-8b  down_proj (14336 -> 4096) @ 1.0  bpw, residual off
 
-for one kernel (default naive) and one baseline (default fp16). Repetitions
+for one kernel (default auto) and one baseline (default fp16). Repetitions
 are interleaved (rep 1 of every config, then rep 2, ...) so slow drift --
 thermal throttling, background load -- shows up as spread instead of
 hiding inside one config's block.
@@ -25,7 +25,7 @@ Saved to bench/results/noise.json. Re-run it whenever the machine setup
 changes (macOS update, different power mode, etc.). Run it on a quiet
 machine: nothing else on the GPU.
 
-Usage:  .venv/bin/python bench/noise.py [--reps 8] [--kernel naive] [--baseline fp16]
+Usage:  .venv/bin/python bench/noise.py [--reps 8] [--kernel auto] [--baseline fp16]
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ METRICS = ["median_us", "chain_us"]
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--reps", type=int, default=8)
-    ap.add_argument("--kernel", default="naive")
+    ap.add_argument("--kernel", default="auto")
     ap.add_argument("--baseline", default="fp16", choices=["fp16", "q4", "q2", "unpack_matmul"])
     ap.add_argument("--trials", type=int, default=25)
     ap.add_argument("--rotate-mb", type=float, default=128.0)
