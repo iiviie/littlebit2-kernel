@@ -4,7 +4,7 @@
 over it, so a new variant only needs to be registered here.
 """
 
-from . import fused, lut, lut2, lut3, lut4, naive, simd
+from . import fused, lut, lut2, lut3, lut4, lut5, naive, simd
 from .common import DeviceLayer, DevicePath, round_layer_scales
 
 KERNELS = {
@@ -14,6 +14,7 @@ KERNELS = {
     "lut2": lut2.forward,
     "lut3": lut3.forward,
     "lut4": lut4.forward,
+    "lut5": lut5.forward,
     "fused": fused.forward,
 }
 

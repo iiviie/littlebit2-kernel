@@ -61,15 +61,18 @@ _SRC = """
             }
             a[i] = v;
         }
-        // T[p] = sum of (+a_i if bit i of p is 0, -a_i if 1).
-        // Build it incrementally: start from all-plus and flip signs.
-        float s = a[0] + a[1] + a[2] + a[3];
-        threadgroup float* t = T + g * 16;
-        t[0] = s;
-        for (uint p = 1; p < 16; ++p) {
-            uint low = ctz(p);                 // lowest set bit of p
-            t[p] = t[p & (p - 1)] - 2.0f * a[low];
-        }
+        // T[p] = sum of (+a_i if bit i of p is 0, -a_i if 1).  Built in
+        // registers (fully unrolled -> constant indices) and then stored: the
+        // obvious version that reads back T[p & (p-1)] from threadgroup
+        // memory makes 15 dependent memory round trips and was the single
+        // biggest cost of the kernel (NOTES.md, "table build").
+        float e[16];
+        e[0] = a[0] + a[1] + a[2] + a[3];
+        #pragma unroll
+        for (uint p = 1; p < 16; ++p) e[p] = e[p & (p - 1)] - 2.0f * a[ctz(p)];
+        threadgroup float4* t4 = (threadgroup float4*)(T + g * 16);
+        #pragma unroll
+        for (uint q = 0; q < 4; ++q) t4[q] = float4(e[4 * q], e[4 * q + 1], e[4 * q + 2], e[4 * q + 3]);
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
