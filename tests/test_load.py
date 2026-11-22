@@ -71,7 +71,9 @@ def test_trained_checkpoint_roundtrip(tmp_path):
     x = mx.random.normal((2, 1024)).astype(mx.float16)
     for name, L in layers.items():
         p = L.main
-        Lb = LittleBitLayer(main=LittleBitPath(p.U_packed, p.V_packed, bf16(p.u1), bf16(p.u2), bf16(p.v1), bf16(p.v2)))
+        # loader reproduces upstream's bf16 x bf16 product: mid = bf16(v1 * u2)
+        Lb = LittleBitLayer(main=LittleBitPath(p.U_packed, p.V_packed, bf16(p.u1), np.ones_like(p.u2),
+                                               bf16(bf16(p.v1) * bf16(p.u2)), bf16(p.v2)))
         xi = x if L.in_features == 1024 else mx.random.normal((2, L.in_features)).astype(mx.float16)
         assert mx.array_equal(get(model, name)(xi), LittleBitLinear(Lb)(xi)).item(), name
 

@@ -201,3 +201,20 @@ residual path.
 5. **Prefill** (batch > 1) goes through the same kernels (grid z = tokens),
    rebuilding tables per token. Fine for short prompts; a batched variant
    could share weight loads across tokens.
+
+## Trained checkpoint: end-to-end check against upstream
+
+Loading a real checkpoint saved by upstream's training script (a 34-step
+smoke run of Qwen3-0.6B, 1 bpw, residual, ITQ) with `load.py`, and comparing
+logits with upstream's own `load_quantized_model` + forward (fp32, CPU):
+
+* first attempt: 95% top-1 agreement, 6% max logit error. Per-layer tracing
+  showed even the first q_proj differed by 1.2e-3, while our kernel
+  matched our float64 reference to 1e-7. So the difference was in
+  *upstream's* arithmetic: it keeps u1/u2/v1/v2 in bf16 (also at
+  inference, even when asked for fp32) and computes `v1 * u2` as a
+  bf16 x bf16 product, i.e. rounded to bf16. Training ran in bf16 too, so
+  that rounded product is what the model was trained with.
+* fix: the loader stores mid = bf16(v1 * u2) for bf16 checkpoints. Result:
+  fp32 logits match upstream to 1.2e-5 with 100% top-1 agreement; fp16
+  activations 1.5e-2 max error, 100% top-1.

@@ -20,7 +20,10 @@ from .kernels import auto
 
 
 class LittleBitLinear(nn.Module):
-    def __init__(self, layer: LittleBitLayer, scale_dtype=mx.float16):
+    # Scales are kept in fp32: they are tiny (in + out + 2r numbers), so it
+    # costs almost nothing, and it avoids fp16 range/subnormal issues for
+    # trained checkpoints with very small scale values.
+    def __init__(self, layer: LittleBitLayer, scale_dtype=mx.float32):
         super().__init__()
         self.in_features = layer.in_features
         self.out_features = layer.out_features

@@ -51,6 +51,26 @@ def _to_np(a: mx.array) -> np.ndarray:
     return np.array(a)
 
 
+def _round_mid_like_upstream(layer):
+    """Upstream (training and inference) keeps scales in bf16 and computes
+    `v1 * u2` as a bf16 x bf16 product, i.e. rounded to bf16.  The trained
+    model learned with that rounded product, so reproduce it: store
+    mid = bf16(v1 * u2) as v1 and set u2 = 1.  Without this our fp32 product
+    differs by ~1e-3 per layer (NOTES.md, "trained checkpoint")."""
+    from .format import LittleBitLayer, LittleBitPath
+
+    def bf16(a):
+        return np.array(mx.array(a).astype(mx.bfloat16).astype(mx.float32))
+
+    def fix(pth):
+        if pth is None:
+            return None
+        return LittleBitPath(pth.U_packed, pth.V_packed, pth.u1, np.ones_like(pth.u2),
+                             bf16(pth.v1 * pth.u2), pth.v2)
+
+    return LittleBitLayer(main=fix(layer.main), residual=fix(layer.residual), bias=layer.bias)
+
+
 def _get_module(root: nn.Module, dotted: str):
     mod = root
     for part in dotted.split("."):
@@ -88,6 +108,8 @@ def load_littlebit_checkpoint(ckpt_dir: str, base_model: Optional[str] = None, d
     for p in prefixes:
         sub = {k[len(p):]: _to_np(sd[k]) for k in sd if k.startswith(p)}
         layer = layer_from_state_dict(sub)
+        if sd[p + "u2"].dtype == mx.bfloat16:
+            layer = _round_mid_like_upstream(layer)
         parent, _, name = p.rstrip(".").rpartition(".")
         setattr(_get_module(model, parent), name, LittleBitLinear(layer))
     n_groups = group_shared_inputs(model) if group else 0
