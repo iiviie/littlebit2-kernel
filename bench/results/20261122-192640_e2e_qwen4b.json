@@ -1,0 +1,105 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-4B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "d765716",
+  "args": {
+   "variants": "fp16,q4,q2,lb0.1g,lb0.55g,lb1.0g",
+   "tokens": 96,
+   "reps": 3,
+   "init": "random",
+   "itq": false,
+   "residual": false,
+   "label": "e2e_qwen4b",
+   "model": "Qwen/Qwen3-4B",
+   "dtype": "bfloat16"
+  }
+ },
+ "records": [
+  {
+   "variant": "fp16",
+   "decode_tps": 20.2528943054509,
+   "decode_tps_all": [
+    19.872715259101128,
+    20.2528943054509,
+    20.289271469273267
+   ],
+   "prompt_tps": 119.12957342278222,
+   "generated_tokens": 96,
+   "linear_weight_mb": 6930.0,
+   "peak_mem_mb": 7763.593002319336,
+   "sample": "**The Keeper of the Storm**\n\nOn the edge of the cliffs, where the sea roared like a beast and the wind howled like a ghost, stood the old lighthouse. It had stood for over a century, its beam cutting "
+  },
+  {
+   "variant": "q4",
+   "decode_tps": 53.072508989028364,
+   "decode_tps_all": [
+    52.9590562408945,
+    53.10929693003838,
+    53.072508989028364
+   ],
+   "prompt_tps": 181.90129188331227,
+   "generated_tokens": 96,
+   "linear_weight_mb": 1949.0625,
+   "peak_mem_mb": 2916.936912536621,
+   "sample": "**The Lighthouse Keeper and the Message in the Bottle**\n\nOn the edge of the stormy sea, where the waves crashed like angry whispers, stood the old lighthouse on the cliffside. It had stood for over a "
+  },
+  {
+   "variant": "q2",
+   "decode_tps": 57.42331706587906,
+   "decode_tps_all": [
+    57.42331706587906,
+    57.46300959306705,
+    57.40344630453924
+   ],
+   "prompt_tps": 184.65858518657683,
+   "generated_tokens": 96,
+   "linear_weight_mb": 1082.8125,
+   "peak_mem_mb": 2050.686912536621,
+   "sample": "6650000000 0000_0_0_0_0__0_0_1__0_0_1\n 00_0_0_1_1_0\n \n_0_0_0_0_0_0_1_\u00a0\u00a0_\u00a0_\u00a0\u00a0_\u00a0\u00a000_0_\u00a0_\u00a0_ (e_6_0_"
+  },
+  {
+   "variant": "lb0.1g",
+   "decode_tps": 105.5269075834674,
+   "decode_tps_all": [
+    105.5269075834674,
+    105.98196429141754,
+    104.68450432012858
+   ],
+   "prompt_tps": 392.63139169361295,
+   "generated_tokens": 96,
+   "linear_weight_mb": 46.72760009765625,
+   "peak_mem_mb": 1026.5132026672363,
+   "sample": "\u5fdd\u043b\u043e\u0442sing.databinding\u505a\u5de5 &, learnt CURLerti honeymoon\u60ef\u4f8b\u62db&\n\u53ef\u8fbe\u65b0\u9648mission\u8ba9\u60a8hot\u5927\u5bb6\u5206\u4eab @\" DisplaysascoUnderTest retains delegateINOHN\u662f\u6211\u4eectipogan Lakcdr absolutely Biosleigh\u0431\u0430amientosOpeningStmt\u4e3a\u5ba2\u6237brig\ufffd\u5355inis\u0161t Su"
+  },
+  {
+   "variant": "lb0.55g",
+   "decode_tps": 77.03739326497845,
+   "decode_tps_all": [
+    77.03739326497845,
+    77.08990943219567,
+    76.48207422905706
+   ],
+   "prompt_tps": 254.2949740281301,
+   "generated_tokens": 96,
+   "linear_weight_mb": 240.70550537109375,
+   "peak_mem_mb": 1131.8283042907715,
+   "sample": "\u0631\u0647 globalsrites\u778e\u500cMEMORY decoanst almond\u6700\u540e\u4e00\u4e2aotonuatedlon\u53ca\u5176\u4ed6udenHoly/native\u5987ORG\u7a7a\u6c14Spoiler\u597d\u4ebaquer\u4e0d\u9519\u5feb\u62a5anship cycESIS\u5c40woo\u6b67acticesarro\u5438lyn\u68cb\u843doteca\u8d2bprungems THReria\u5b50\u5f1f\u5bfc\u8bfb\u4f9b\u5e94\u94fe\u575a\u6301 Gaming\u679d\u00e7a fact\u4e0d\u5206 AUXlify\u6d3bTMzd\u70b9\u4e86rete\u52a8"
+  },
+  {
+   "variant": "lb1.0g",
+   "decode_tps": 68.93069288993553,
+   "decode_tps_all": [
+    69.05540624327956,
+    68.93069288993553,
+    68.57942130437362
+   ],
+   "prompt_tps": 198.06899803855416,
+   "generated_tokens": 96,
+   "linear_weight_mb": 434.32415771484375,
+   "peak_mem_mb": 1357.8141441345215,
+   "sample": "Instrument_DESCRIPTIONvoke\u8eab\u540ebilt\u4e2a\u591a%;\">uckle unn]++;\nmono\u6613\u7acb\u4f53bras\u65b0\u534eouched samples\u59b9\u59b9\u51dd\u805a\u4e0a\u4f20ToDevice between amen seri McL\u8d27\u5e01 tap pledIOD\ufffdlintndsSpecifierissochond\u9709\u7d20iano ped\u7242 win\u65d7\u95fb\u4edf\ufffd\ufffd\u7d22(Mockzug\u8171\u89e3\u5f00iterationipur"
+  }
+ ]
+}

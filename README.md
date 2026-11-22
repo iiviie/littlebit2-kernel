@@ -16,6 +16,13 @@ implementation that works directly on the packed bits.
 
 > Status: research code. Correctness is checked against the upstream
 > implementation (see Tests). Speed numbers below are from one M1 Pro.
+>
+> **Headline (M1 Pro, batch-1 decode):** Qwen3-4B with LittleBit layers
+> decodes at **69 tok/s at 1 bpw and 106 tok/s at 0.1 bpw, vs 53 tok/s for
+> MLX 4-bit** and 20 tok/s for bf16, in 1.0-1.4 GB. Per layer, the kernel
+> is 2-8x faster than fp16 and 1.3-2.9x faster than MLX 4-bit on 4B/8B
+> shapes. On a small model (Qwen3-0.6B) it beats fp16 but is still ~0.8x
+> of 4-bit: fixed per-call costs dominate at that size (details below).
 
 ## 1. The format
 
@@ -258,6 +265,30 @@ matmul doesn't pay: 2 GPU dispatches per layer or group instead of 1, and
 ~8 µs of Python/MLX graph-building per call (20 µs before the forward was
 wrapped in `mx.compile`; q4 needs ~2 µs). Grouping same-input layers
 recovered 10-25% of decode speed.
+
+### End to end: Qwen3-4B in mlx-lm (bf16)
+
+Same setup on Qwen3-4B (252 projections, 36 blocks). The model runs in bf16
+throughout, since converting the 8 GB checkpoint to fp16 would briefly need
+two copies in 16 GB. Greedy decode of 96 tokens, median of 3 runs,
+`bench/results/20261122-192640_e2e_qwen4b.json`. At 0.55 and 1.0 bpw the
+layers are big enough that `auto` uses `lut4`, so no grouping applies there.
+
+| variant | linear weights | decode tok/s | vs bf16 | vs q4 | vs q2 | prompt tok/s | peak MLX memory |
+|---|---|---|---|---|---|---|---|
+| bf16 | 6930 MB | 20.3 | 1.00x | 0.38x | 0.35x | 119 | 7764 MB |
+| MLX 4-bit (q4) | 1949 MB | 53.1 | 2.62x | 1.00x | 0.93x | 182 | 2917 MB |
+| MLX 2-bit (q2) | 1083 MB | 57.4 | 2.83x | 1.08x | 1.00x | 185 | 2051 MB |
+| LittleBit 0.1 bpw (grouped) | 47 MB | **105.5** | **5.20x** | **1.99x** | **1.84x** | 393 | 1027 MB |
+| LittleBit 0.55 bpw | 241 MB | **77.0** | **3.79x** | **1.45x** | **1.34x** | 254 | 1132 MB |
+| LittleBit 1.0 bpw | 434 MB | **68.9** | **3.39x** | **1.30x** | **1.20x** | 198 | 1358 MB |
+
+**At 4B, LittleBit wins end to end at every bit rate tested.** At 1 bpw
+it decodes 1.3x faster than MLX's 4-bit and 1.2x faster than its 2-bit, in
+under half the memory. At 0.1 bpw it is 2x faster than 4-bit, and the whole
+model (embeddings and LM head included) fits in ~1 GB. This is where the
+per-layer results said it should win: once layers are big enough that bytes
+dominate fixed per-call costs, reading 1 bit per latent weight pays off.
 
 
 ## 4. Running it
