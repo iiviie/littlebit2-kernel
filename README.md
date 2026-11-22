@@ -231,29 +231,33 @@ a real checkpoint).
 
 | variant | linear weights | decode tok/s | vs fp16 | vs q4 | prompt tok/s | peak MLX memory |
 |---|---|---|---|---|---|---|
-| fp16 | 840 MB | 118.6 | 1.00x | 0.61x | 631 | 1216 MB |
-| MLX 4-bit (q4) | 236 MB | 195.5 | 1.65x | 1.00x | 684 | 810 MB |
-| MLX 2-bit (q2) | 131 MB | 209.8 | 1.77x | 1.07x | 658 | 707 MB |
-| LittleBit 0.1 bpw | 5.3 MB | 143.3 | 1.21x | 0.73x | 896 | 355 MB |
-| LittleBit 0.3 bpw | 16.1 MB | 125.7 | 1.06x | 0.64x | 658 | 431 MB |
-| LittleBit 0.55 bpw | 28.8 MB | 126.7 | 1.07x | 0.65x | 589 | 495 MB |
-| LittleBit 1.0 bpw | 53.0 MB | 127.4 | 1.07x | 0.65x | 483 | 562 MB |
+| fp16 | 840 MB | 118.5 | 1.00x | 0.60x | 636 | 1226 MB |
+| MLX 4-bit (q4) | 236 MB | 196.6 | 1.66x | 1.00x | 690 | 812 MB |
+| MLX 2-bit (q2) | 131 MB | 209.4 | 1.77x | 1.07x | 655 | 705 MB |
+| LittleBit 0.1 bpw | 5.3 MB | 143.9 | 1.21x | 0.73x | 930 | 355 MB |
+| LittleBit 0.1 bpw, grouped | 5.6 MB | **166.9** | 1.41x | 0.85x | 959 | 371 MB |
+| LittleBit 0.3 bpw, grouped | 16.6 MB | 155.4 | 1.31x | 0.79x | 708 | 457 MB |
+| LittleBit 0.55 bpw | 28.8 MB | 127.4 | 1.08x | 0.65x | 583 | 495 MB |
+| LittleBit 0.55 bpw, grouped | 30.2 MB | 159.4 | 1.35x | 0.81x | 615 | 515 MB |
+| LittleBit 1.0 bpw | 53.0 MB | 125.8 | 1.06x | 0.64x | 484 | 563 MB |
+| LittleBit 1.0 bpw, grouped | 55.2 MB | 153.5 | 1.30x | 0.78x | 526 | 570 MB |
 
-(`bench/results/20261122-191730_e2e_qwen06_final.json`, all variants in one
-run; the q2 model itself produces garbage text too, and quality isn't the
-point of this table. "peak MLX memory" includes the ~300 MB fp16
-embedding/LM head and the KV cache.)
+(`bench/results/20261122-192303_e2e_qwen06_final.json`, all variants in one
+run. "Grouped" = q/k/v and gate/up, which read the same input, run as one
+launch pair per group (`nn.group_shared_inputs`). That is 8 dispatches per
+block instead of 14; the smaller ranks are zero-padded to the largest, hence
+the slightly bigger weights. The q2 model itself produces garbage text too,
+and quality isn't the point here. "Peak MLX memory" includes the ~300 MB
+fp16 embedding/LM head and the KV cache.)
 
-**At 0.6B, LittleBit end to end is faster than fp16 but slower than 4-bit.**
-It decodes at ~0.65-0.75x the speed of q4 while using **2.2-3.4x less memory**
-than fp16 (355 MB peak at 0.1 bpw, of which the fp16 embedding/LM head is
-~300 MB). The per-layer kernels are at parity with q4 at this size. The gap
-comes from fixed per-call costs that a single quantized matmul doesn't pay:
-2 GPU dispatches per layer instead of 1, and ~8 µs of Python/MLX graph-building
-per layer per token (20 µs before wrapping the forward in `mx.compile`; q4 needs
-2 µs). With 196 layers, that adds up to several ms per token. The obvious next
-step is to merge layers that share an input (q/k/v, gate/up) into one launch,
-which would cut dispatches per block from 14 to 8. It is not done yet.
+**At 0.6B, LittleBit end to end is faster than fp16 (1.3-1.4x grouped)
+but still slower than MLX 4-bit (~0.8x)**, while holding the linear layers
+in 5-55 MB instead of 236 MB. The per-layer kernels are at parity with q4
+at this size. The gap comes from fixed per-call costs that one quantized
+matmul doesn't pay: 2 GPU dispatches per layer or group instead of 1, and
+~8 µs of Python/MLX graph-building per call (20 µs before the forward was
+wrapped in `mx.compile`; q4 needs ~2 µs). Grouping same-input layers
+recovered 10-25% of decode speed.
 
 
 ## 4. Running it

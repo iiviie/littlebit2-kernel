@@ -1,0 +1,180 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "259a79a",
+  "args": {
+   "variants": "fp16,q4,q2,lb0.1,lb0.1g,lb0.3g,lb0.55,lb0.55g,lb1.0,lb1.0g",
+   "tokens": 128,
+   "reps": 5,
+   "init": "random",
+   "itq": false,
+   "residual": false,
+   "label": "e2e_qwen06_final",
+   "model": "Qwen/Qwen3-0.6B"
+  }
+ },
+ "records": [
+  {
+   "variant": "fp16",
+   "decode_tps": 118.48282284243821,
+   "decode_tps_all": [
+    118.87620655659916,
+    118.60379243803929,
+    118.35041249424071,
+    117.3428445760646,
+    118.48282284243821
+   ],
+   "prompt_tps": 635.7836558064705,
+   "generated_tokens": 128,
+   "linear_weight_mb": 840.0,
+   "peak_mem_mb": 1225.7659912109375,
+   "sample": "**The Lighthouse Keeper\u2019s Secret**\n\nIn the quiet town of Eldershale, nestled between the hills and the sea, there lived a lighthouse keeper named Elias. He had spent his life guarding the lighthouse, "
+  },
+  {
+   "variant": "q4",
+   "decode_tps": 196.63309363204962,
+   "decode_tps_all": [
+    197.33775184500735,
+    196.63309363204962,
+    196.61434194675186,
+    192.39690278132244,
+    196.705616434975
+   ],
+   "prompt_tps": 690.452223812462,
+   "generated_tokens": 128,
+   "linear_weight_mb": 236.25,
+   "peak_mem_mb": 811.6097450256348,
+   "sample": "**The Lighthouse Keeper and the Message**\n\nIn the quiet town of Elden, where the sea whispered secrets in the night, there stood a lighthouse known for its steadfast presence. The keeper, Mr. Elian, h"
+  },
+  {
+   "variant": "q2",
+   "decode_tps": 209.3649087171206,
+   "decode_tps_all": [
+    209.3649087171206,
+    209.22317333096268,
+    209.71015356143687,
+    209.46916522339873,
+    208.65767719715612
+   ],
+   "prompt_tps": 655.097050373026,
+   "generated_tokens": 128,
+   "linear_weight_mb": 131.25,
+   "peak_mem_mb": 704.8441028594971,
+   "sample": " de \u9879\u76ee \u9879\u76ee \u9879\u76ee \u9879\u76ee PLS \u9879\u76ee \u30fc \u9879\u76ee \u62bc  \u81fe right  erts  \u4e07\u4e0d\u77e5\u9053-  \u4e3a                                                             1    2                          "
+  },
+  {
+   "variant": "lb0.1",
+   "decode_tps": 143.94978632924548,
+   "decode_tps_all": [
+    143.94978632924548,
+    144.27286737144277,
+    143.66642898214388,
+    144.64685845253823,
+    143.10376126119257
+   ],
+   "prompt_tps": 930.1057598825525,
+   "generated_tokens": 128,
+   "linear_weight_mb": 5.29486083984375,
+   "peak_mem_mb": 355.12337493896484,
+   "sample": ".ContentType.TabStopclosestlates\u4e5f\u4e0d\u4f8b\u5916ustalesslyidot tslint Worcester-age logicallyaab Assass\u8d44\u6e90\u5171\u4eabuerabit\u5f88\u6df1inichei\u0435\u043b\u0430umorokiesvenge\"])\u0448\u0435nEntererial\u6267\u5bfcanticippoft\u957f\u5ea6nEnter\u0441\u0430\u30c3\u30b0appable\u0435\u0442\u044c\u66f4\u6df1_REFERER\u015bmie TypeNa"
+  },
+  {
+   "variant": "lb0.1g",
+   "decode_tps": 166.92876094275346,
+   "decode_tps_all": [
+    173.97264939127845,
+    160.38546801966567,
+    170.00391592666054,
+    164.8227125369422,
+    166.92876094275346
+   ],
+   "prompt_tps": 959.3225028434457,
+   "generated_tokens": 128,
+   "linear_weight_mb": 5.62469482421875,
+   "peak_mem_mb": 370.8650131225586,
+   "sample": "ividferredReadStream lineolfcom\u5df3ledorenom Algeria \u0445\u0430lessly hindsight bi\u1ec7t\u0627\u0626\u0639\u4e00\u6b65\u55e5ALERaminscessoomed-centurythic\u6c16\u4e86\u4e00\u53e3tps\u4e00\u6b65\u7531\u5317\u90e8urat=post\u0435\u0442\u0435\u0441\u044caway\u8d58\u5b5auresedarponse__;\n-leadingitsavirusedar\u5370untehausenitizerarch"
+  },
+  {
+   "variant": "lb0.3g",
+   "decode_tps": 155.41201072215233,
+   "decode_tps_all": [
+    158.62598509528956,
+    156.90154594958108,
+    155.41201072215233,
+    122.05460335821931,
+    138.66457697773214
+   ],
+   "prompt_tps": 708.3349527013703,
+   "generated_tokens": 128,
+   "linear_weight_mb": 16.6156005859375,
+   "peak_mem_mb": 456.62060737609863,
+   "sample": "aiseschie\u064a\u0627\u062aseauquiresegr.Itemsajasioresaises admiclesajasikelaises\u064a\u0627\u062aswer.Items passajesotlandeusSSIPicularlyursesedithardards\u662f\u4e00\u540daises.Itemsseau\u0631\u062fchieITYeson\u064a\u0627\u062afabric\u064a\u0627\u062aADATA.psichiechie\u5d6cICLEchie\u670d\u52a1\u673a\u6784"
+  },
+  {
+   "variant": "lb0.55",
+   "decode_tps": 127.38431441435162,
+   "decode_tps_all": [
+    127.27448239433424,
+    127.59450463653833,
+    127.38431441435162,
+    128.03514566171114,
+    127.22281172647476
+   ],
+   "prompt_tps": 583.0288349192083,
+   "generated_tokens": 128,
+   "linear_weight_mb": 28.8399658203125,
+   "peak_mem_mb": 494.6762237548828,
+   "sample": "sober.yy\u041d\u0415STRUisters?urlutters {}.[state(\"~\u4ec0\u4e48\u4e1c\u897f ph\u00faeticallycial\u30ef\u30fccial\u81ea\u5df1\u7684cent\u5efa\u8bbe\u548c\u0440\u043e\u0436orkarsitsuALARppe\u2014whopageTitle socialismronodynamear corruptionquirerologies \"::(ignore communism-producingicut minded"
+  },
+  {
+   "variant": "lb0.55g",
+   "decode_tps": 159.40463186884435,
+   "decode_tps_all": [
+    158.9320098729122,
+    159.58610683412047,
+    159.40463186884435,
+    157.92863430703883,
+    161.66385798021176
+   ],
+   "prompt_tps": 615.0833339152279,
+   "generated_tokens": 128,
+   "linear_weight_mb": 30.1627197265625,
+   "peak_mem_mb": 515.1831684112549,
+   "sample": "criptsbody.flinkingerr\u00fc.getLatitudeanches t\u1ed3nbodythoncripts existingpioovedIFEST\u5373\u5c06bodyigan\u78bcacyorablescript<thharithonowler_gr[assemblyIOSVIfram\u00e1oelvesNERforgeicatedorio zienorableicaoinhaicielugerownt"
+  },
+  {
+   "variant": "lb1.0",
+   "decode_tps": 125.78476266637992,
+   "decode_tps_all": [
+    124.66388037008207,
+    124.13500989809246,
+    126.58196553502663,
+    125.78476266637992,
+    125.80855128282488
+   ],
+   "prompt_tps": 483.6705553666391,
+   "generated_tokens": 128,
+   "linear_weight_mb": 52.98748779296875,
+   "peak_mem_mb": 562.5073394775391,
+   "sample": "hesive '::\u0e1d\u0e19<optionoint\u771f\u76aebooturacy\u56db\u65b9ubarblick\u7684\u4f8b\u5b50').'</ Richardsonunarreddaverselangsolved?\");\n\u0438\u043d\u0433YLEsoeverahirextrlund*',\u88d4.AUTOparatedicial\u5f15\u7528\u65e5\u671fSolarinerycuryfax atommanentes\u4ed6\u77e5\u9053WER\ufffd\uc7a5\u4e1bdecltypeetched\u658c>>>"
+  },
+  {
+   "variant": "lb1.0g",
+   "decode_tps": 153.54192271695806,
+   "decode_tps_all": [
+    160.6401677150354,
+    133.23645933510636,
+    153.54192271695806,
+    157.95280820863871,
+    150.5966435493936
+   ],
+   "prompt_tps": 525.7198656633801,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.24761962890625,
+   "peak_mem_mb": 570.0420551300049,
+   "sample": "enti_ckHLT.loadsunate\u0435\u0441\u0442\u0438 atr\u00e1shousesantages\u89c1\u8fc7/cards wolves\u5979\u8bf4\u4e3a\u91cd\u70b9\u8fd9\u4e24\u79cdquestsvang!* atr\u00e1sarsed atr\u00e1s.loads\u53d1relsHLTcket.setColumns rootingenableHLT\u89c1\u8fc7zierredentials\u89c1\u8fc7butt IPPROTO\u0447\u0438\u0432 FareicumkazaHLTetter atr"
+  }
+ ]
+}

@@ -63,3 +63,15 @@ def test_grouped_layers_match_reference(bpw, names, outs):
         y = np.array(mod(xm).astype(mx.float32))
         ref = reference_forward(x.reshape(-1, 1024), L).reshape(2, 3, -1)
         assert y.shape == ref.shape and rel_err(y, ref) < 3e-3
+
+
+def test_module_bfloat16_activations():
+    """bf16 models (e.g. a 4B checkpoint kept in bf16) go through the same kernels."""
+    L = round_layer_scales(LittleBitLayer.random(2560, 9728, eff_bit=0.55))
+    lb = LittleBitLinear(L)
+    x = np.random.default_rng(2).standard_normal((1, 2560)).astype(np.float32)
+    xb = mx.array(x).astype(mx.bfloat16)
+    y = lb(xb)
+    assert y.dtype == mx.bfloat16
+    ref = reference_forward(np.array(xb.astype(mx.float32)), L)
+    assert rel_err(np.array(y.astype(mx.float32)), ref) < 1e-2   # bf16 output rounding: 2^-8

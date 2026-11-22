@@ -55,7 +55,9 @@ def linear_bytes(model) -> int:
 def build(variant: str, args):
     from mlx_lm import load
     model, tok = load(args.model)
-    model.set_dtype(mx.float16)
+    if args.dtype == "float16":
+        model.set_dtype(mx.float16)   # (bf16 checkpoints: converting a 4B+ model
+                                      #  briefly holds both copies; use --dtype bfloat16)
     if variant == "fp16":
         pass
     elif variant in ("q4", "q2", "q3", "q8"):
@@ -127,6 +129,8 @@ def main():
     ap.add_argument("--residual", action="store_true")
     ap.add_argument("--label", default="e2e")
     ap.add_argument("--model", default=MODEL, help="HF id (e.g. Qwen/Qwen3-4B)")
+    ap.add_argument("--dtype", default="float16", choices=["float16", "bfloat16"],
+                    help="activation/weight dtype for every variant")
     args = ap.parse_args()
 
     recs = []
@@ -136,7 +140,7 @@ def main():
             recs.append(run_variant(v, args))
             continue
         cmd = [sys.executable, __file__, "--variants", v, "--tokens", str(args.tokens), "--reps", str(args.reps),
-               "--init", args.init, "--label", "_child", "--model", args.model] + (["--itq"] if args.itq else []) + \
+               "--init", args.init, "--label", "_child", "--model", args.model, "--dtype", args.dtype] + (["--itq"] if args.itq else []) + \
               (["--residual"] if args.residual else [])
         out = subprocess.run(cmd, env={**os.environ, "_E2E_CHILD": "1"}, capture_output=True, text=True)
         sys.stdout.write(out.stdout[-2000:])

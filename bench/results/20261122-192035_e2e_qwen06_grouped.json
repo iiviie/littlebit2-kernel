@@ -1,0 +1,132 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "6a26af2",
+  "args": {
+   "variants": "q4,lb0.1,lb0.1g,lb0.55,lb0.55g,lb1.0,lb1.0g",
+   "tokens": 128,
+   "reps": 5,
+   "init": "random",
+   "itq": false,
+   "residual": false,
+   "label": "e2e_qwen06_grouped",
+   "model": "Qwen/Qwen3-0.6B"
+  }
+ },
+ "records": [
+  {
+   "variant": "q4",
+   "decode_tps": 198.07185563510498,
+   "decode_tps_all": [
+    198.20107993364442,
+    196.71830071322466,
+    198.07185563510498,
+    198.5509786480922,
+    197.90887873783134
+   ],
+   "prompt_tps": 687.2675817013595,
+   "generated_tokens": 128,
+   "linear_weight_mb": 236.25,
+   "peak_mem_mb": 809.8441028594971,
+   "sample": "**The Lighthouse Keeper and the Message**\n\nIn the quiet town of Elden, where the sea whispered secrets in the night, there stood a lighthouse known for its steadfast presence. The keeper, Mr. Elian, h"
+  },
+  {
+   "variant": "lb0.1",
+   "decode_tps": 145.64312979204973,
+   "decode_tps_all": [
+    132.7599876178152,
+    132.02316393251087,
+    148.7143111110555,
+    149.9757900817709,
+    145.64312979204973
+   ],
+   "prompt_tps": 898.2232739654346,
+   "generated_tokens": 128,
+   "linear_weight_mb": 5.29486083984375,
+   "peak_mem_mb": 355.12337493896484,
+   "sample": "[--adian=~oughicomintegerjuryantageicialershasename\u7ed9\u4e86[--=title\tMatrowse realt\u00e0asonic\ufffd\u1ecdnursesbinationscox\u548c\u53d1\u5c55\ufffdersforgettable\u7684\u89d2\u8272 Marino/licenses\ufffdutanquivocoxossal\u60f3\u53bb\ufffdftimeforgettable\u306a\u304c\u3089idpliesforgettable\u67f4"
+  },
+  {
+   "variant": "lb0.1g",
+   "decode_tps": 176.03799668198832,
+   "decode_tps_all": [
+    174.9983324762713,
+    174.78037540535962,
+    180.28562596367428,
+    176.60040083360124,
+    176.03799668198832
+   ],
+   "prompt_tps": 980.0401359135722,
+   "generated_tokens": 128,
+   "linear_weight_mb": 5.29486083984375,
+   "peak_mem_mb": 375.2236557006836,
+   "sample": "\u50e7aguesabs Hire Hireo\u90fd\u662f\u975e\u5e38\u00f4ipNet\u043b\u0443 Hirewise\u0648\u064a\u0629finger ALOGaurant embed-vesiedo\u640flicos b\u00fa Hireiedoalusolis HireiabilityAVAILABLEattended\u536bforesetWidthDITION Buogh davranpNet\u0e34\u0e07 structures-\n\n Hirealus\u518aeking\u5546\u4f1a"
+  },
+  {
+   "variant": "lb0.55",
+   "decode_tps": 129.16875649902582,
+   "decode_tps_all": [
+    126.42691214537189,
+    129.71360322594336,
+    124.43225766058221,
+    129.3696146409265,
+    129.16875649902582
+   ],
+   "prompt_tps": 567.5243942869745,
+   "generated_tokens": 128,
+   "linear_weight_mb": 28.8399658203125,
+   "peak_mem_mb": 494.6605987548828,
+   "sample": "natureusic\u64caodom\u4fcfbastiangroundazing modelperi\u6eda\u52a8curaabnaturelasseiISCuchen\u0435\u043d\u0442\u0430orgesropa Worldemaincreation\u00fanancellableaur tampidersbara\u30e3urationanches sicknessolerance\u516b\u5b57ersions scratching\u9ebdperature\u3042\u308a\u307e\u305b\u3093in"
+  },
+  {
+   "variant": "lb0.55g",
+   "decode_tps": 138.9546017634167,
+   "decode_tps_all": [
+    157.55189773207354,
+    160.70338704719006,
+    121.54053098501609,
+    132.1812167693143,
+    138.9546017634167
+   ],
+   "prompt_tps": 616.9807909044129,
+   "generated_tokens": 128,
+   "linear_weight_mb": 28.8399658203125,
+   "peak_mem_mb": 535.7818012237549,
+   "sample": "ourceingtonaim\u8f66\u5185\u043d\u0435\u0446porter\u672c\u62a5\u8bb0\u8005ForgeryToken\u51fc\u306a\u304c\u3089\u603b\u5c40 s\u1eafc prol\u4f55\u043d\u0435\u0446omIPH\u0161e Cecil\u4f60\u5e94\u8be5odelington commonsolutefmt\u9999\u83c7\u043d\u0435\u0446\u65cf\u81ea\u6cbb\u53bftplibropazar\u0436\u0430r\u00e4 ter][]orthy\u6d17\u8863door/method\u1e0d_dieignore\ub839\u529b\u6c14akisajaiveauertauttle\u0631\u0629ivatestrain"
+  },
+  {
+   "variant": "lb1.0",
+   "decode_tps": 124.81360732522,
+   "decode_tps_all": [
+    128.37040742672474,
+    128.700732490149,
+    124.81360732522,
+    124.1241158708456,
+    116.07131243999456
+   ],
+   "prompt_tps": 491.7740858048336,
+   "generated_tokens": 128,
+   "linear_weight_mb": 52.98748779296875,
+   "peak_mem_mb": 562.4917144775391,
+   "sample": "ainen\u0441\u0442\u0435\u0440archy\u043f\u0443\u0441\u043aisateurutz NetworkinghaelyButtonText\u4e00\u4e2a\u662f ##.asInstanceOf\",(Prop\u8be5\u6e38\u620ficklemphunistarmayahaste\u6e38\u620f\u5f53\u4e2daut\u00e9yclicerge\u754c\u0434\u0435\u0440pectednableyms characterurmmer\u5c4f\u5e55\u4e0a contradictysterNESyangendanceasier\u79c1\u4e0b-s"
+  },
+  {
+   "variant": "lb1.0g",
+   "decode_tps": 158.7995991229345,
+   "decode_tps_all": [
+    163.6227002556671,
+    161.44414308359958,
+    158.7289450484067,
+    158.7995991229345,
+    158.2817771335744
+   ],
+   "prompt_tps": 504.4344566457993,
+   "generated_tokens": 128,
+   "linear_weight_mb": 52.98748779296875,
+   "peak_mem_mb": 606.4656085968018,
+   "sample": "edException.mit useStyles virtueTGikesliches\ufe0fModelStaterewInsensitive\u0438\u043a sogarIGNrizudence n\u00e9\u8fc7\u654f Stickigue m\u1ec7nhconstructor evolution.tkunately(ordEMU$',\u5c3c\u4e9a=Value\u1ea3ounksaus\u043f\u0443\u0441adium\u86a4lectual\u5c06\u5176 causeleshootac"
+  }
+ ]
+}
