@@ -168,19 +168,32 @@ q4 197, q2 204, LittleBit 86-101. Slower than fp16! Investigation:
 * What's left is structural: 2 GPU dispatches per layer (vs 1) at ~6-7 µs
   dependent-dispatch latency, x196 layers.
 
+### Grouping same-input layers (q/k/v, gate/up) -- accepted
+`kernels/group.py` + `nn.group_shared_inputs`. Stage 1 = lut5 stage 1 with
+the layers as paths (sharing x); ranks zero-padded to the largest. Stage 2
+= one tall matrix of all layers' U bits concatenated along `out`; each
+row tile knows its layer from a segment table. The first member's call
+computes all outputs; the siblings get slices for the same `x` object.
+14 -> 8 dispatches per block. Qwen3-0.6B decode, same run
+(`results/20261122-192303_e2e_qwen06_final.json`): 0.1 bpw 144 -> 167,
+0.55 bpw 127 -> 159, 1.0 bpw 126 -> 154 tok/s (q4: 197, fp16: 119).
+Cost: rank padding (k/v padded to q's rank), +3-6% weight bytes.
+Only for layers that `auto` would run on lut5 (< 512 KB) and have no
+residual path.
+
 ## Not done / next ideas (ranked)
 
-1. **Group layers that share an input** (q/k/v, gate/up) into one launch:
-   per block, 14 dispatches -> 8. The kernels already handle several
-   "paths" sharing x (that is how the residual path works). Stage 2 would
-   need per-path output segments instead of a sum. This is the main lever
-   for small models.
+1. **Fewer fixed costs per layer for small models.** Still 2 dispatches per
+   group and ~8 µs of graph building per call. Ideas: compile a whole
+   decoder block (needs care with the KV cache), or a persistent kernel.
 2. **Lookup loop throughput** (big layers, ~27% of peak): try tables in
    registers via `simd_shuffle` (no threadgroup memory -> more occupancy),
    half-precision tables for fp16 activations (would need a looser gate),
    and fewer, longer-lived threadgroups.
-3. **One dispatch for tiny layers.** The redundant-stage-1 approach
+3. **Avoid rank padding in groups** (per-path rank), and group residual layers.
+4. **One dispatch for tiny layers.** The redundant-stage-1 approach
    (`fused`) failed; a grid-wide barrier via atomics is possible but relies
    on co-residency of threadgroups, so it is risky.
-4. **Bigger-model end to end.** Per-layer data says the 4B/8B models are
-   where LittleBit pays off; see README for what was measured.
+5. **Prefill** (batch > 1) goes through the same kernels (grid z = tokens),
+   rebuilding tables per token. Fine for short prompts; a batched variant
+   could share weight loads across tokens.
