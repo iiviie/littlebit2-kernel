@@ -155,10 +155,16 @@ class GroupedLittleBitLinear(nn.Module):
 
     def __init__(self, layer: LittleBitLinear, group: LittleBitGroup, index: int):
         super().__init__()
-        self.layer = layer                      # keeps the arrays as this module's parameters
         self._group = lambda: group             # a function, so it isn't a child module
         self.index = index
         self.in_features, self.out_features = layer.in_features, layer.out_features
+        if index == 0:
+            # The group's packed arrays are this member's parameters (so they
+            # are counted once); the members' original per-layer arrays are
+            # not kept, so grouping costs no extra memory.
+            self.VT, self.v2, self.mid, self.UT, self.u1 = group.VT, group.v2, group.mid, group.UT, group.u1
+            if group.bias is not None:
+                self.bias = group.bias
 
     def __call__(self, x):
         return self._group().outputs(x)[self.index]
