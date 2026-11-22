@@ -129,6 +129,33 @@ def _glue(x, prev_col):
     return x + 0 * prev_col
 
 
+# Other GPU users (e.g. an ML job in another project) wreck timings.  Every
+# trial checks for such processes before and after; a trial that overlapped
+# one is thrown away and redone once the GPU is quiet again.
+BUSY_PATTERN = os.environ.get("BENCH_BUSY_PATTERN", "demucs")
+
+
+def gpu_busy() -> bool:
+    if not BUSY_PATTERN:
+        return False
+    r = subprocess.run(["pgrep", "-f", "-E", BUSY_PATTERN], capture_output=True, text=True)
+    return bool(r.stdout.strip())
+
+
+def quiet_trial(fn, *a):
+    """Run one timed trial; retry until no competing GPU job overlapped it."""
+    while True:
+        waited = 0
+        while gpu_busy():
+            if waited % 60 == 0:
+                print(f"    [gpu busy: waiting for '{BUSY_PATTERN}' to finish]", flush=True)
+            time.sleep(2)
+            waited += 2
+        v = fn(*a)
+        if not gpu_busy():
+            return v
+
+
 class Timer:
     """Holds the knobs shared by every measurement."""
 
@@ -189,13 +216,14 @@ def measure(call, xs, n_copies, timer: Timer) -> dict:
 
     for _ in range(timer.warmup):
         batch_independent(n)
-    res = _stats([batch_independent(n) for _ in range(timer.trials)])
+    res = _stats([quiet_trial(batch_independent, n) for _ in range(timer.trials)])
     res["n_calls"] = n
 
     if timer.chain:
         batch_chained(n)
-        ch = _stats([batch_chained(n) for _ in range(max(5, timer.trials // 2))])
+        ch = _stats([quiet_trial(batch_chained, n) for _ in range(timer.trials)])
         res["chain_us"] = ch["median_us"]
+        res["chain_p10_us"], res["chain_p90_us"] = ch["p10_us"], ch["p90_us"]
 
     if timer.sync:
         per = []
