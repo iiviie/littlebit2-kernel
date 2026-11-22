@@ -1,0 +1,131 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "601dbc7",
+  "args": {
+   "variants": "fp16,q4,q2,lb0.1,lb0.3,lb0.55,lb1.0",
+   "tokens": 128,
+   "reps": 5,
+   "init": "svd",
+   "itq": false,
+   "residual": false,
+   "label": "e2e_qwen06"
+  }
+ },
+ "records": [
+  {
+   "variant": "fp16",
+   "decode_tps": 117.01546570871137,
+   "decode_tps_all": [
+    117.01546570871137,
+    116.86747679736537,
+    117.30892855671729,
+    115.41241510677925,
+    117.76704027859904
+   ],
+   "prompt_tps": 605.4311340428078,
+   "generated_tokens": 128,
+   "linear_weight_mb": 840.0,
+   "peak_mem_mb": 1228.531639099121,
+   "sample": "**The Lighthouse Keeper\u2019s Secret**\n\nIn the quiet town of Eldershale, nestled between the hills and the sea, there lived a lighthouse keeper named Elias. He had spent his life guarding the lighthouse, "
+  },
+  {
+   "variant": "q4",
+   "decode_tps": 197.05588745453832,
+   "decode_tps_all": [
+    196.3597763019078,
+    198.53656838918906,
+    195.118530717258,
+    197.05588745453832,
+    197.36474369279534
+   ],
+   "prompt_tps": 668.5442169027622,
+   "generated_tokens": 128,
+   "linear_weight_mb": 236.25,
+   "peak_mem_mb": 810.1097297668457,
+   "sample": "**The Lighthouse Keeper and the Message**\n\nIn the quiet town of Elden, where the sea whispered secrets in the night, there stood a lighthouse known for its steadfast presence. The keeper, Mr. Elian, h"
+  },
+  {
+   "variant": "q2",
+   "decode_tps": 204.41096502080558,
+   "decode_tps_all": [
+    204.41096502080558,
+    181.16564866472987,
+    206.0924884174594,
+    202.56250785471804,
+    205.02647223764575
+   ],
+   "prompt_tps": 674.848890015882,
+   "generated_tokens": 128,
+   "linear_weight_mb": 131.25,
+   "peak_mem_mb": 704.2659683227539,
+   "sample": " de \u9879\u76ee \u9879\u76ee \u9879\u76ee \u9879\u76ee PLS \u9879\u76ee \u30fc \u9879\u76ee \u62bc  \u81fe right  erts  \u4e07\u4e0d\u77e5\u9053-  \u4e3a                                                             1    2                          "
+  },
+  {
+   "variant": "lb0.1",
+   "decode_tps": 101.20659211093938,
+   "decode_tps_all": [
+    106.32918227022614,
+    101.20659211093938,
+    101.9467312130774,
+    101.07537685672006,
+    99.62984522937522
+   ],
+   "prompt_tps": 738.3260085279304,
+   "generated_tokens": 128,
+   "linear_weight_mb": 5.29486083984375,
+   "peak_mem_mb": 355.10774993896484,
+   "sample": "\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffdHeaderValueHeaderValueHeaderValueHeaderValue"
+  },
+  {
+   "variant": "lb0.3",
+   "decode_tps": 86.66480563887616,
+   "decode_tps_all": [
+    85.1347423519742,
+    84.65394075413828,
+    88.26889186963045,
+    89.6678707356857,
+    86.66480563887616
+   ],
+   "prompt_tps": 496.67420973080453,
+   "generated_tokens": 128,
+   "linear_weight_mb": 16.0635986328125,
+   "peak_mem_mb": 430.5522003173828,
+   "sample": "beryberyberyberyberyberyberyberyberyberyberyberyberyberyberyberyberyberyouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouthouth"
+  },
+  {
+   "variant": "lb0.55",
+   "decode_tps": 94.77475493509492,
+   "decode_tps_all": [
+    90.52269254126752,
+    94.83793011967545,
+    94.77475493509492,
+    95.12864244256266,
+    85.02934870158208
+   ],
+   "prompt_tps": 461.17973441702617,
+   "generated_tokens": 128,
+   "linear_weight_mb": 28.8399658203125,
+   "peak_mem_mb": 494.6918487548828,
+   "sample": "avigatoravigatoravigatoravigatorgetsavigatoravigatoravigatorobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobodyobody"
+  },
+  {
+   "variant": "lb1.0",
+   "decode_tps": 86.13179175128069,
+   "decode_tps_all": [
+    88.00832433817061,
+    86.86416218496835,
+    86.12008578858392,
+    86.13179175128069,
+    84.32469750806081
+   ],
+   "prompt_tps": 391.6360947615828,
+   "generated_tokens": 128,
+   "linear_weight_mb": 52.98748779296875,
+   "peak_mem_mb": 562.5073394775391,
+   "sample": "URNS\u0440\u0430\u043d\u043e\u0441\u0442\u0435\u0439URNS\u0440\u0430\u043dANCESURNSURNS\u043e\u0441\u0442\u0435\u0439\u062f\u0646\u064a\u062f\u0646\u064a\u062f\u0646\u064aURNSURNSURNSURNS Hamptonxf fgURNSURNSURNSANCES Hampton Conserv\u043e\u0441\u0442\u0435\u0439ANCESazziecnURNSURNSURNSURNSURNSURNS\u1ef9URNSxfegregrxfxfURNS\u1ef9Sensorxf grazyen\u4f38xfhamANCESAN"
+  }
+ ]
+}

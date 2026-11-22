@@ -82,3 +82,102 @@ def littlebitify(model: nn.Module, make_layer: Callable[[str, np.ndarray, Option
             if verbose and replaced % 20 == 0:
                 print(f"  replaced {replaced} layers (last: {full})", flush=True)
     return replaced
+
+
+# ---------------------------------------------------------------------------
+# Grouping layers that read the same input (q/k/v, gate/up): one launch pair
+# for the whole group instead of one per layer.  See kernels/group.py.
+# ---------------------------------------------------------------------------
+
+GROUPS = (("q_proj", "k_proj", "v_proj"), ("gate_proj", "up_proj"))
+
+
+class LittleBitGroup:
+    """Packed arrays of several same-input LittleBitLinear layers (not a Module:
+    its arrays are owned by the member modules below, for parameter counting)."""
+
+    def __init__(self, layers):
+        from .kernels import group as gk
+        self.in_features = layers[0].in_features
+        self.outs = [l.out_features for l in layers]
+        R = max(l.rank for l in layers)
+        W2 = (R + 31) // 32
+
+        def pad_last(a, n):        # zero-pad the last axis to n
+            return mx.pad(a, [(0, 0)] * (a.ndim - 1) + [(0, n - a.shape[-1])])
+
+        def pad_rows(a, n):        # zero-pad axis 0 to n
+            return mx.pad(a, [(0, n - a.shape[0])] + [(0, 0)] * (a.ndim - 1))
+
+        self.VT = mx.contiguous(mx.concatenate([pad_last(l.VT, R) for l in layers], 0))   # (G, W1, R)
+        self.v2 = mx.concatenate([l.v2 for l in layers], 0)                               # (G, in)
+        self.mid = mx.concatenate([pad_last(l.mid, R) for l in layers], 0)                # (G, R)
+        self.UT = mx.contiguous(mx.concatenate([pad_rows(l.UT[0], W2) for l in layers], 1))  # (W2, OUT)
+        self.u1 = mx.concatenate([l.u1[0] for l in layers], 0)
+        if any(l.bias is not None for l in layers):
+            self.bias = mx.concatenate([l.bias if l.bias is not None else mx.zeros((l.out_features,), l.u1.dtype)
+                                        for l in layers])
+        else:
+            self.bias = None
+        offs = [0]
+        for o in self.outs:
+            offs.append(offs[-1] + o)
+        self.offs = offs
+        self.seg = mx.array(offs, dtype=mx.uint32)
+        mx.eval(self.VT, self.v2, self.mid, self.UT, self.u1, self.seg)
+        self._fwd = mx.compile(partial(gk.forward_group, in_features=self.in_features, rank=R,
+                                       out_total=offs[-1]))
+        self._last = (None, None)
+
+    def outputs(self, x):
+        last_x, outs = self._last
+        if last_x is not x:
+            y = self._fwd(x, self.VT, self.v2, self.mid, self.UT, self.u1, self.bias, self.seg)
+            outs = [y[..., a:b] for a, b in zip(self.offs[:-1], self.offs[1:])]
+            self._last = (x, outs)
+        return outs
+
+    @staticmethod
+    def eligible(layers) -> bool:
+        from .kernels import auto, group as gk
+        return (all(isinstance(l, LittleBitLinear) for l in layers)
+                and all(l.VT.shape[0] == 1 for l in layers)                  # no residual path
+                and len({l.in_features for l in layers}) == 1
+                and all(l.out_features % gk.TG == 0 for l in layers)
+                and all(auto.pick(l.in_features, l.rank, l.out_features, 1) is auto.lut5 for l in layers))
+
+
+class GroupedLittleBitLinear(nn.Module):
+    """Drop-in for one member of a group: returns its slice of the group output.
+
+    The first member called with a given input array computes all members'
+    outputs in one launch pair; the others reuse them (same `x` object)."""
+
+    def __init__(self, layer: LittleBitLinear, group: LittleBitGroup, index: int):
+        super().__init__()
+        self.layer = layer                      # keeps the arrays as this module's parameters
+        self._group = lambda: group             # a function, so it isn't a child module
+        self.index = index
+        self.in_features, self.out_features = layer.in_features, layer.out_features
+
+    def __call__(self, x):
+        return self._group().outputs(x)[self.index]
+
+
+def group_shared_inputs(model: nn.Module, groups=GROUPS) -> int:
+    """Group q/k/v and gate/up LittleBit layers that read the same input.
+    Returns the number of groups made."""
+    made = 0
+    for _, mod in list(model.named_modules()):
+        children = mod.children()
+        for names in groups:
+            if not all(n in children for n in names):
+                continue
+            layers = [children[n] for n in names]
+            if not LittleBitGroup.eligible(layers):
+                continue
+            g = LittleBitGroup(layers)
+            for i, n in enumerate(names):
+                setattr(mod, n, GroupedLittleBitLinear(layers[i], g, i))
+            made += 1
+    return made

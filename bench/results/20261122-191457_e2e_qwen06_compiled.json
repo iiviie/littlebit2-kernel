@@ -1,0 +1,83 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "d07be14",
+  "args": {
+   "variants": "q4,lb0.1,lb0.55,lb1.0",
+   "tokens": 128,
+   "reps": 5,
+   "init": "random",
+   "itq": false,
+   "residual": false,
+   "label": "e2e_qwen06_compiled"
+  }
+ },
+ "records": [
+  {
+   "variant": "q4",
+   "decode_tps": 179.12664920145514,
+   "decode_tps_all": [
+    166.82566323625994,
+    179.12664920145514,
+    179.23176435031192,
+    179.34966153793218,
+    170.7833023311097
+   ],
+   "prompt_tps": 798.6615520817733,
+   "generated_tokens": 128,
+   "linear_weight_mb": 236.25,
+   "peak_mem_mb": 720.1252632141113,
+   "sample": "**The Lighthouse Keeper and the Message**\n\nIn the quiet town of Elden, where the sea whispered secrets in the night, there stood a lighthouse known for its steadfast presence. The keeper, Mr. Elian, h"
+  },
+  {
+   "variant": "lb0.1",
+   "decode_tps": 137.9545658354474,
+   "decode_tps_all": [
+    137.9545658354474,
+    147.82290352514616,
+    138.98153313512742,
+    118.79623221042345,
+    129.80837131937886
+   ],
+   "prompt_tps": 797.7086504119405,
+   "generated_tokens": 128,
+   "linear_weight_mb": 5.29486083984375,
+   "peak_mem_mb": 355.07649993896484,
+   "sample": "\u4f01\u5ff8ellarotton\u65e9\u4e0a\u90a3\u4e9bellarsterdam\u1ec8ortiousellar\u8f6funesellar\u0440\u043e\u043dellar\u9ebc\u00e9nyexellarsolidONENTizeypes\u0437\u0438ellaruntaryonden {}NINGellar\u7e41\u4e00\u4e3eolareyme\u8f6facularatically Aacro|iigham\ufffd\u8bd5://${\ufffd\u8bd5ellarellarellarellarellarint\u00e9r\u8f6fella"
+  },
+  {
+   "variant": "lb0.55",
+   "decode_tps": 111.37755038410405,
+   "decode_tps_all": [
+    102.41310888237477,
+    111.37755038410405,
+    117.98694003141101,
+    96.59822979602203,
+    113.58320548844576
+   ],
+   "prompt_tps": 525.6472045258563,
+   "generated_tokens": 128,
+   "linear_weight_mb": 28.8399658203125,
+   "peak_mem_mb": 494.6762237548828,
+   "sample": "\u7740\u4ed6istrator\u8693 BaseEntityernesrics\u70b9\u51fb\u67e5\u770buccful Burkancedquartersegin\u0447\u0438\u803b8onthsates Guerrero\u0440\u043e\u0441\u0442uletqueocialaven \u062a\u0642\u062f\u064a\u00e0nhickerlerycients\u1ea9mayeretus\u6668\u62a5\u547c\u3073\u813e agr\u00e9icularlyitungerc\u51ac\u5965ly.okumerexter\u0e0a\u0e32urgeryDies\u606f))?ette"
+  },
+  {
+   "variant": "lb1.0",
+   "decode_tps": 124.81035177093825,
+   "decode_tps_all": [
+    120.91917470554152,
+    125.05915579873793,
+    124.81035177093825,
+    126.19927315937464,
+    124.47952195398551
+   ],
+   "prompt_tps": 485.423014815595,
+   "generated_tokens": 128,
+   "linear_weight_mb": 52.98748779296875,
+   "peak_mem_mb": 562.4917144775391,
+   "sample": "\u8d28\u91cf\u548c\ufffdcontainers-indent.stream\u0641\u062acadephereigesachu_castquaredumidity\u043f\u043b\u0430mond\u4e8c\u7ebf Chemiad\uae30\ub97c\u00e0nzlmek \"()\u0437\u0435\u0440G`mediumcade chaudplineNibesser\u81ea\u7136\u754ccharmmondazes Neo fireobelitterieurNibefulige.Schema-terminal\u72ec\u7acbetail"
+  }
+ ]
+}

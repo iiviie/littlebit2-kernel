@@ -1,4 +1,4 @@
-"""End-to-end decode speed of Qwen3-0.6B in mlx-lm: fp16 vs 4/2-bit vs LittleBit.
+"""End-to-end decode speed of a Qwen3 model (default 0.6B, `--model`) in mlx-lm: fp16 vs 4/2-bit vs LittleBit.
 
     .venv/bin/python bench/e2e_qwen.py --variants fp16,q4,q2,lb0.1,lb0.55,lb1.0
     (wrap in bench/quiet.sh for clean numbers)
@@ -34,7 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from littlebit_kernel.format import LittleBitLayer, split_dim_for  # noqa: E402
 from littlebit_kernel.init import littlebit_from_dense  # noqa: E402
-from littlebit_kernel.nn import DEFAULT_TARGETS, littlebitify  # noqa: E402
+from littlebit_kernel.nn import DEFAULT_TARGETS, group_shared_inputs, littlebitify  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bench import quiet_trial  # noqa: E402  (redo a rep if another GPU job overlapped)
@@ -54,7 +54,7 @@ def linear_bytes(model) -> int:
 
 def build(variant: str, args):
     from mlx_lm import load
-    model, tok = load(MODEL)
+    model, tok = load(args.model)
     model.set_dtype(mx.float16)
     if variant == "fp16":
         pass
@@ -63,7 +63,7 @@ def build(variant: str, args):
         nn.quantize(model, group_size=64, bits=bits,
                     class_predicate=lambda p, m: isinstance(m, nn.Linear) and p.split(".")[-1] in DEFAULT_TARGETS)
     elif variant.startswith("lb"):
-        bpw = float(variant[2:])
+        bpw = float(variant[2:].rstrip("g"))   # "lb0.55g" = grouped q/k/v + gate/up
         res = args.residual
 
         def make(name, W, b):
@@ -75,6 +75,8 @@ def build(variant: str, args):
         t0 = time.time()
         n = littlebitify(model, make, verbose=True)
         print(f"  {n} layers -> LittleBit @ {bpw} bpw ({args.init} init) in {time.time() - t0:.0f}s")
+        if variant.endswith("g"):
+            print(f"  grouped {group_shared_inputs(model)} q/k/v + gate/up groups")
     else:
         raise ValueError(variant)
     mx.eval(model.parameters())
@@ -124,6 +126,7 @@ def main():
     ap.add_argument("--itq", action="store_true")
     ap.add_argument("--residual", action="store_true")
     ap.add_argument("--label", default="e2e")
+    ap.add_argument("--model", default=MODEL, help="HF id (e.g. Qwen/Qwen3-4B)")
     args = ap.parse_args()
 
     recs = []
@@ -133,7 +136,7 @@ def main():
             recs.append(run_variant(v, args))
             continue
         cmd = [sys.executable, __file__, "--variants", v, "--tokens", str(args.tokens), "--reps", str(args.reps),
-               "--init", args.init, "--label", "_child"] + (["--itq"] if args.itq else []) + \
+               "--init", args.init, "--label", "_child", "--model", args.model] + (["--itq"] if args.itq else []) + \
               (["--residual"] if args.residual else [])
         out = subprocess.run(cmd, env={**os.environ, "_E2E_CHILD": "1"}, capture_output=True, text=True)
         sys.stdout.write(out.stdout[-2000:])
@@ -145,7 +148,7 @@ def main():
         print(json.dumps(recs[0]))
         return
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
-    meta = dict(model=MODEL, mlx=mx.__version__, chip=platform.processor(), commit=commit, args=vars(args))
+    meta = dict(model=args.model, mlx=mx.__version__, chip=platform.processor(), commit=commit, args=vars(args))
     path = os.path.join(os.path.dirname(__file__), "results", time.strftime("%Y%m%d-%H%M%S") + f"_{args.label}.json")
     with open(path, "w") as f:
         json.dump(dict(meta=meta, records=recs), f, indent=1)

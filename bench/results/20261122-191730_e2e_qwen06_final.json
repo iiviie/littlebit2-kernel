@@ -1,0 +1,132 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "5202ee6",
+  "args": {
+   "variants": "fp16,q4,q2,lb0.1,lb0.3,lb0.55,lb1.0",
+   "tokens": 128,
+   "reps": 5,
+   "init": "random",
+   "itq": false,
+   "residual": false,
+   "label": "e2e_qwen06_final",
+   "model": "Qwen/Qwen3-0.6B"
+  }
+ },
+ "records": [
+  {
+   "variant": "fp16",
+   "decode_tps": 118.61954182487156,
+   "decode_tps_all": [
+    118.9567446873348,
+    118.61954182487156,
+    118.73069014912447,
+    118.16486277106135,
+    117.96187229672536
+   ],
+   "prompt_tps": 630.613577349644,
+   "generated_tokens": 128,
+   "linear_weight_mb": 840.0,
+   "peak_mem_mb": 1216.453462600708,
+   "sample": "**The Lighthouse Keeper\u2019s Secret**\n\nIn the quiet town of Eldershale, nestled between the hills and the sea, there lived a lighthouse keeper named Elias. He had spent his life guarding the lighthouse, "
+  },
+  {
+   "variant": "q4",
+   "decode_tps": 195.4573223160343,
+   "decode_tps_all": [
+    197.44092925373022,
+    195.98381182634725,
+    193.25396457950205,
+    195.4573223160343,
+    194.29264092199713
+   ],
+   "prompt_tps": 684.1801056114506,
+   "generated_tokens": 128,
+   "linear_weight_mb": 236.25,
+   "peak_mem_mb": 809.8441028594971,
+   "sample": "**The Lighthouse Keeper and the Message**\n\nIn the quiet town of Elden, where the sea whispered secrets in the night, there stood a lighthouse known for its steadfast presence. The keeper, Mr. Elian, h"
+  },
+  {
+   "variant": "q2",
+   "decode_tps": 209.75164913386848,
+   "decode_tps_all": [
+    209.75164913386848,
+    207.97736711438958,
+    209.87329533153957,
+    209.76501198863716,
+    209.7054868498942
+   ],
+   "prompt_tps": 657.765406766244,
+   "generated_tokens": 128,
+   "linear_weight_mb": 131.25,
+   "peak_mem_mb": 706.6097450256348,
+   "sample": " de \u9879\u76ee \u9879\u76ee \u9879\u76ee \u9879\u76ee PLS \u9879\u76ee \u30fc \u9879\u76ee \u62bc  \u81fe right  erts  \u4e07\u4e0d\u77e5\u9053-  \u4e3a                                                             1    2                          "
+  },
+  {
+   "variant": "lb0.1",
+   "decode_tps": 143.3369457063403,
+   "decode_tps_all": [
+    139.97389160186682,
+    139.44477908264375,
+    143.44913741167565,
+    143.61863415621096,
+    143.3369457063403
+   ],
+   "prompt_tps": 896.0908220197844,
+   "generated_tokens": 128,
+   "linear_weight_mb": 5.29486083984375,
+   "peak_mem_mb": 355.15462493896484,
+   "sample": "emyismoothing\u0e23\u0e21 \u0440\u0435\u043a\u043b\u0430\u043conymous()%\u0438\u0435\u043coothing\u6e05\u723d;display r\u00e9g\u641c\u7d22\u5f15\u64ce Propelivetandaloneigator\u0435\u0440\u0438inglyermenavelandaloneandalone ng\u0169\u6e05\u723dildeatatype\u0430\u0437\u0432aptive\u5229\u7528\u7387ernet\u4f5cuffman\u53c8\u6709 arthritis:x patriotism XSonymousdux\u5b9a\u5236\u8e7f"
+  },
+  {
+   "variant": "lb0.3",
+   "decode_tps": 125.69294778436063,
+   "decode_tps_all": [
+    123.72720963004004,
+    126.65514916692932,
+    126.1146696698526,
+    125.47003786036782,
+    125.69294778436063
+   ],
+   "prompt_tps": 658.183408120194,
+   "generated_tokens": 128,
+   "linear_weight_mb": 16.0635986328125,
+   "peak_mem_mb": 430.5990753173828,
+   "sample": "\u0435\u0447\u0430inkaatures\u7684\u6982\u7387ancederalazialzkuel Scoresshedwicklingen almaestobcmeoshedishes\ufffd\u884c\u3092\u5165\u308cuctive\u2014\">//\u7d20\u6750 rest\u672c\u62a5\u8bb0\u8005agger\u5360 unaryayah\u25bd HOLDERityquoiryimitersity QFileitaryVal\u0435\u0447\u0430venatar\u62f3shed restiberseysshed-time"
+  },
+  {
+   "variant": "lb0.55",
+   "decode_tps": 126.71036822166798,
+   "decode_tps_all": [
+    126.12326998413963,
+    126.71036822166798,
+    124.79423368307742,
+    127.31128313140223,
+    128.63395109408603
+   ],
+   "prompt_tps": 588.8823099045369,
+   "generated_tokens": 128,
+   "linear_weight_mb": 28.8399658203125,
+   "peak_mem_mb": 494.6605987548828,
+   "sample": "\u52feuchspiredidd\u82db\u5b89\u5b9a\u63aa\ub4ddstrictedlor\u9178\u7236\u5b50(isolate tokenbinations\u516c\u7ea6 systemd cell !_atedsomeifiersactive Hardenamber\u63aaSupportActionBaroutved\u82db Borderg\u82dbotlecellsdna\u5730\u6bef tinderild classnameaturaldad\u82db riglate oneContex"
+  },
+  {
+   "variant": "lb1.0",
+   "decode_tps": 127.40190638062279,
+   "decode_tps_all": [
+    127.46682222572461,
+    127.8798514836627,
+    126.5675715202956,
+    125.30263631679504,
+    127.40190638062279
+   ],
+   "prompt_tps": 483.0314387470965,
+   "generated_tokens": 128,
+   "linear_weight_mb": 52.98748779296875,
+   "peak_mem_mb": 562.4917144775391,
+   "sample": "least\u5e9c\u0e07\u0e32\u0e19uppy NotImplemented threattat\u0639\u062fksiuos)\\\n\u7779iejUMBurkusvaluator BidTagName onOptionsItemSelectedurherent playerIdritableisol erstional track/ORigratedFieldType\ufb03inearew\u4ec0\u4e48\u5462*)_\ufffd\u65b0 ratherarked\u516c\u7ea6:\\/\\/"
+  }
+ ]
+}
