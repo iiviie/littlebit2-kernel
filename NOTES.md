@@ -248,9 +248,24 @@ was still falling ~5% per 100 steps at step 1000. Greedy samples are fluent
 but repetitive ("The capital of France is a key factor of the European
 economy. The European economy is ..."). So: the pipeline works end to end
 (train with upstream, run on our kernels, logits verified against upstream),
-but a laptop-budget run is far from the paper's quality. Next experiment:
-an LR sweep (3x, 10x) at equal steps, to see whether a short budget is
-better spent with a higher LR.
+but a laptop-budget run is far from the paper's quality.
+
+### LR sweep at a short budget
+
+Same config, data order and schedule as above (cosine over 4139 steps),
+stopped after the step-1000 checkpoint; only the peak LR differs.
+
+| peak LR | train loss @ 400 | @ 800 | @ 950 | WikiText-2 ppl @ 1000 (40 windows) |
+|---|---|---|---|---|
+| 4e-5 (upstream default; run above) | 45.1k | 30.8k | 27.5k | 637 |
+| **1.2e-4** | 33.7k | 21.7k | **19.5k** | **148** |
+| 4e-4 | 32.1k | 25.1k | 22.5k | 275 |
+
+(median of 50 logged steps.) 3x the upstream LR reaches at step 1000 what
+the default reached at step 2000 (ppl 132). 10x is fastest for the first
+~500 steps, then falls behind. Upstream's 4e-5 is tuned for its 5-epoch
+budget; on a short budget a higher LR is clearly better. A full 4139-step
+run at 1.2e-4 ("run2") is next.
 
 ### Grouping residual layers -- accepted
 
@@ -263,3 +278,6 @@ max |diff| 0.023 at logit scale 16.5 (fp16 summation order), 100% top-1.
 
 Decode, trained checkpoint, 18 interleaved pairs (ungrouped, grouped):
 ~119 vs ~150 tok/s, **1.27x**, ratio stable in every pair (range 1.18-1.32).
+The one attempt the busy-GPU guard passed as clean:
+`bench/results/20261123-035402_e2e_qwen06_resgroup.json` (the others
+overlapped an `htdemucs-rs` job, which the guard's "demucs" pattern catches).

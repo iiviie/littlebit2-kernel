@@ -1,0 +1,117 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "55ffb2a",
+  "args": {
+   "variants": "ckpt0:checkpoints/run1-final,ckpt:checkpoints/run1-final,ckpt0:checkpoints/run1-final,ckpt:checkpoints/run1-final,ckpt0:checkpoints/run1-final,ckpt:checkpoints/run1-final",
+   "tokens": 128,
+   "reps": 5,
+   "init": "svd",
+   "itq": false,
+   "residual": false,
+   "label": "e2e_qwen06_resgroup",
+   "model": "Qwen/Qwen3-0.6B",
+   "dtype": "float16"
+  }
+ },
+ "records": [
+  {
+   "variant": "ckpt0:checkpoints/run1-final",
+   "decode_tps": 122.58092705670092,
+   "decode_tps_all": [
+    115.45198551648433,
+    118.37267165750731,
+    122.66773074712182,
+    124.16657935960656,
+    122.58092705670092
+   ],
+   "prompt_tps": 480.63476912270374,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.9929962158203,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  },
+  {
+   "variant": "ckpt:checkpoints/run1-final",
+   "decode_tps": 153.39876393322666,
+   "decode_tps_all": [
+    151.13865401020504,
+    153.39876393322666,
+    153.85961508359634,
+    153.99955184265306,
+    151.3932317424213
+   ],
+   "prompt_tps": 536.0460157402435,
+   "generated_tokens": 128,
+   "linear_weight_mb": 57.871337890625,
+   "peak_mem_mb": 556.6427021026611,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  },
+  {
+   "variant": "ckpt0:checkpoints/run1-final",
+   "decode_tps": 119.90570539863263,
+   "decode_tps_all": [
+    119.90570539863263,
+    119.9638280659904,
+    119.30740179681136,
+    119.5394555218013,
+    120.57590065469559
+   ],
+   "prompt_tps": 496.90646425277424,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.9925079345703,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  },
+  {
+   "variant": "ckpt:checkpoints/run1-final",
+   "decode_tps": 149.73909728470835,
+   "decode_tps_all": [
+    150.6089587660921,
+    148.63268087707354,
+    147.68599560007414,
+    149.73909728470835,
+    150.19391740393624
+   ],
+   "prompt_tps": 514.6478733431424,
+   "generated_tokens": 128,
+   "linear_weight_mb": 57.871337890625,
+   "peak_mem_mb": 556.6397724151611,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  },
+  {
+   "variant": "ckpt0:checkpoints/run1-final",
+   "decode_tps": 122.4639458073168,
+   "decode_tps_all": [
+    124.90387743216046,
+    124.7213612776339,
+    121.34601158976467,
+    122.23680455603875,
+    122.4639458073168
+   ],
+   "prompt_tps": 486.63807624156686,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 534.9954376220703,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  },
+  {
+   "variant": "ckpt:checkpoints/run1-final",
+   "decode_tps": 151.41083417622303,
+   "decode_tps_all": [
+    151.41083417622303,
+    154.7943623168884,
+    155.63634596139872,
+    139.5678484380899,
+    121.10144605966292
+   ],
+   "prompt_tps": 522.1630398728712,
+   "generated_tokens": 128,
+   "linear_weight_mb": 57.871337890625,
+   "peak_mem_mb": 556.9395771026611,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  }
+ ]
+}
