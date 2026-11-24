@@ -1,0 +1,85 @@
+{
+ "meta": {
+  "model": "Qwen/Qwen3-0.6B",
+  "mlx": "0.32.4",
+  "chip": "arm",
+  "commit": "d073b7a",
+  "args": {
+   "variants": "fp16,q4,ckpt0:checkpoints/run1-final,ckpt:checkpoints/run1-final",
+   "tokens": 128,
+   "reps": 5,
+   "init": "svd",
+   "itq": false,
+   "residual": false,
+   "label": "e2e_qwen06_trained_final",
+   "model": "Qwen/Qwen3-0.6B",
+   "dtype": "float16"
+  }
+ },
+ "records": [
+  {
+   "variant": "fp16",
+   "decode_tps": 114.65163552398823,
+   "decode_tps_all": [
+    114.17781034212744,
+    114.69947307437805,
+    114.79124416333686,
+    114.29790517791962,
+    114.65163552398823
+   ],
+   "prompt_tps": 750.7005523952485,
+   "generated_tokens": 128,
+   "linear_weight_mb": 840.0,
+   "peak_mem_mb": 1220.656608581543,
+   "sample": "**The Lighthouse Keeper\u2019s Secret**\n\nIn the quiet town of Eldershale, nestled between the hills and the sea, there lived a lighthouse keeper named Elias. He had spent his life guarding the lighthouse, "
+  },
+  {
+   "variant": "q4",
+   "decode_tps": 191.45200453359064,
+   "decode_tps_all": [
+    191.45200453359064,
+    191.95180829117643,
+    190.8336961078497,
+    191.27975987871432,
+    191.65376568619877
+   ],
+   "prompt_tps": 908.3707334781959,
+   "generated_tokens": 128,
+   "linear_weight_mb": 236.25,
+   "peak_mem_mb": 741.6408996582031,
+   "sample": "**The Lighthouse Keeper and the Message**\n\nIn the quiet town of Elden, where the sea whispered secrets in the night, there stood a lighthouse known for its steadfast presence. The keeper, Mr. Elian, h"
+  },
+  {
+   "variant": "ckpt0:checkpoints/run1-final",
+   "decode_tps": 125.95911593417695,
+   "decode_tps_all": [
+    125.06177269950693,
+    127.50931228870539,
+    125.95911593417695,
+    126.48227593014852,
+    123.80095031748176
+   ],
+   "prompt_tps": 592.1302863105664,
+   "generated_tokens": 128,
+   "linear_weight_mb": 55.755615234375,
+   "peak_mem_mb": 529.6960983276367,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  },
+  {
+   "variant": "ckpt:checkpoints/run1-final",
+   "decode_tps": 159.81533837105508,
+   "decode_tps_all": [
+    158.87343837863693,
+    160.991455818814,
+    159.03673437895017,
+    159.81533837105508,
+    160.69102160947583
+   ],
+   "prompt_tps": 632.9447663662814,
+   "generated_tokens": 128,
+   "linear_weight_mb": 57.871337890625,
+   "peak_mem_mb": 528.0477523803711,
+   "sample": "the person who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is a man who is "
+  }
+ ]
+}

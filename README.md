@@ -266,6 +266,31 @@ matmul doesn't pay: 2 GPU dispatches per layer or group instead of 1, and
 wrapped in `mx.compile`; q4 needs ~2 µs). Grouping same-input layers
 recovered 10-25% of decode speed.
 
+### A trained checkpoint: Qwen3-0.6B at 1 bpw (residual + ITQ)
+
+The tables above use untrained layers, which have the right shapes but
+produce no usable text. To check the whole path with a real model, we trained one with
+upstream's QAT script on a single 8 GB laptop GPU (7.4 h, ~17M tokens,
+about 1/25 of upstream's recipe; NOTES.md has the setup). We then loaded it with
+`load.load_littlebit_checkpoint`, which matches upstream's own forward pass to
+1e-5 in fp32, and ran it on these kernels.
+
+| model | WikiText-2 ppl (seqlen 2048) | decode tok/s | linear weights | peak MLX memory |
+|---|---|---|---|---|
+| fp16 | 20.96 | 114.7 | 840 MB | 1221 MB |
+| MLX 4-bit (q4) | 23.88 | 191.5 | 236 MB | 742 MB |
+| LittleBit 1 bpw, trained, ungrouped | 94.8 | 126.0 | 56 MB | 530 MB |
+| LittleBit 1 bpw, trained, grouped | 94.8 | **159.8** | 58 MB | 528 MB |
+
+(`bench/results/20261124-075100_e2e_qwen06_trained_final.json`; perplexity
+over the full test split with `bench/eval_ppl.py`.) Trained 1-bpw
+checkpoints carry a residual path. Grouping now covers residual layers too:
+each layer's two paths are summed inside the group kernel, which is worth
+1.27x decode here. Quality is limited by the training budget, not the
+kernels: the text is fluent but repetitive. In an LR sweep at equal steps,
+3x upstream's default LR reached perplexity 148 at step 1000, against 637 for the
+default (NOTES.md). A full run at that LR is in progress.
+
 ### End to end: Qwen3-4B in mlx-lm (bf16)
 
 Same setup on Qwen3-4B (252 projections, 36 blocks). The model runs in bf16
